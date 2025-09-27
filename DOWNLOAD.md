@@ -3,7 +3,7 @@
 ## Windows Installer (Recommended)
 **File**: `Coral-1.0.0-Windows-Setup.exe` (770KB)
 **Status**: ✅ Built and Ready
-**Location**: Available after GitHub Release creation
+**Location**: [Download directly from GitHub](https://github.com/nozmo-king/coral/raw/master/Coral-1.0.0-Windows-Setup.exe)
 
 ### What's Included
 - Complete Windows installer with Start Menu shortcuts
@@ -13,7 +13,7 @@
 - Windows documentation
 
 ### Installation Steps
-1. Download the installer from GitHub Releases
+1. **[Click here to download: Coral-1.0.0-Windows-Setup.exe](https://github.com/nozmo-king/coral/raw/master/Coral-1.0.0-Windows-Setup.exe)** (770KB)
 2. Run as Administrator on Windows 10/11 (64-bit)
 3. Choose installation directory (default: `C:\Program Files\Coral`)
 4. Launch from Start Menu: "Coral Mining" or "Coral Wallet"

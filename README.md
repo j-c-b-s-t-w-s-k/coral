@@ -41,7 +41,7 @@ Coral isn't just another cryptocurrency—it's a **revolutionary approach to fai
 ## 🚀 Quick Start
 
 ### For Windows Users
-1. **Download**: Get `Coral-1.0.0-Windows-Setup.exe` from [Releases](https://github.com/nozmo-king/coral/releases)
+1. **Download**: [Coral-1.0.0-Windows-Setup.exe](https://github.com/nozmo-king/coral/raw/master/Coral-1.0.0-Windows-Setup.exe) (770KB)
 2. **Install**: Run installer as Administrator
 3. **Mine**: Launch "Coral Mining" from Start Menu
 4. **Expected Performance**: 500-8000 H/s depending on your CPU
@@ -332,7 +332,7 @@ Need help? We're here for you:
 
 *Fair Mining • CPU Democracy • Financial Freedom*
 
-**[⬇️ Download Windows Installer](https://github.com/nozmo-king/coral/releases) | [📖 Read Full Guide](GETTING_STARTED.md) | [🔧 Build from Source](#building-from-source)**
+**[⬇️ Download Windows Installer](https://github.com/nozmo-king/coral/raw/master/Coral-1.0.0-Windows-Setup.exe) | [📖 Read Full Guide](GETTING_STARTED.md) | [🔧 Build from Source](#building-from-source)**
 
 </div>
 
