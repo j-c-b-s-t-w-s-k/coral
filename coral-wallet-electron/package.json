@@ -1,0 +1,36 @@
+{
+  "name": "coral-wallet",
+  "version": "1.0.0",
+  "description": "Coral Cryptocurrency Wallet - Evolution Beyond Bitcoin",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never"
+  },
+  "author": "Coral Team",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^25.0.0",
+    "electron-builder": "^24.6.3"
+  },
+  "dependencies": {
+    "ws": "^8.14.2",
+    "node-fetch": "^2.6.7"
+  },
+  "build": {
+    "appId": "com.coral.wallet",
+    "productName": "Coral Wallet",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/coral-icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
