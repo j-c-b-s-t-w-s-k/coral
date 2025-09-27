@@ -25,6 +25,11 @@
 
 #include <algorithm>
 #include <utility>
+#include <shutdown.h>
+#include <util/thread.h>
+#include <logging.h>
+#include <node/context.h>
+#include <consensus/validation.h>
 
 namespace node {
 int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
@@ -431,4 +436,141 @@ void BlockAssembler::addPackageTxs(const CTxMemPool& mempool, int& nPackagesSele
         nDescendantsUpdated += UpdatePackagesForAdded(mempool, ancestors, mapModifiedTx);
     }
 }
+
+// Increment the extra nonce to ensure block templates are unique
+void IncrementExtraNonce(CBlock* pblock, const CBlockIndex* pindexPrev, unsigned int& nExtraNonce)
+{
+    // Update nExtraNonce
+    static uint256 hashPrevBlock;
+    if (hashPrevBlock != pblock->hashPrevBlock)
+    {
+        nExtraNonce = 0;
+        hashPrevBlock = pblock->hashPrevBlock;
+    }
+    ++nExtraNonce;
+
+    // Update coinbase transaction with extra nonce
+    unsigned int nHeight = pindexPrev->nHeight + 1;
+    CMutableTransaction txCoinbase(*pblock->vtx[0]);
+    txCoinbase.vin[0].scriptSig = (CScript() << nHeight << CScriptNum(nExtraNonce));
+    assert(txCoinbase.vin[0].scriptSig.size() <= 100);
+
+    pblock->vtx[0] = MakeTransactionRef(std::move(txCoinbase));
+    pblock->hashMerkleRoot = BlockMerkleRoot(*pblock);
+}
+
+// RandomX Mining Function
+bool ScanRandomXHash(CBlockHeader *pblock, uint32_t& nNonce, uint32_t nHashesDone, const Consensus::Params& consensusParams)
+{
+    uint256 hashTarget = ArithToUint256(arith_uint256().SetCompact(pblock->nBits));
+
+    while (nHashesDone < 0x10000) {
+        pblock->nNonce = nNonce;
+
+        // Use RandomX to hash the block header
+        uint256 hash = GetRandomXHash(*pblock);
+
+        // Check if we found a valid hash
+        if (UintToArith256(hash) <= UintToArith256(hashTarget)) {
+            return true;
+        }
+
+        ++nNonce;
+        ++nHashesDone;
+
+        // Check for shutdown every 1000 hashes
+        if ((nHashesDone & 0x3ff) == 0) {
+            if (ShutdownRequested()) {
+                return false;
+            }
+        }
+    }
+
+    return false;
+}
+
+// Enhanced mining loop with RandomX
+static bool ProcessBlockFound(const CBlock& block, const CChainParams& chainparams)
+{
+    LogPrintf("%s\n", block.ToString());
+    LogPrintf("Generated %s\n", FormatMoney(block.vtx[0]->vout[0].nValue));
+
+    // Found a solution
+    {
+        LOCK(cs_main);
+        if (block.hashPrevBlock != chainparams.GetConsensus().hashGenesisBlock)
+            return error("CoralMiner: generated block is stale");
+    }
+
+    // Process this block the same as if we had received it from another node
+    bool fNewBlock = false;
+    BlockValidationState state;
+    if (!::ChainstateActive().ProcessNewBlock(chainparams, std::make_shared<const CBlock>(block), true, &fNewBlock) || !fNewBlock)
+        return error("CoralMiner: ProcessNewBlock, block not accepted");
+
+    return true;
+}
+
+// Main mining loop
+void CoralMiner(const CChainParams& chainparams, const CScript& coinbaseScript, CConnman* connman)
+{
+    LogPrintf("CoralMiner started with RandomX\n");
+    SetThreadPriority(THREAD_PRIORITY_LOWEST);
+    RenameThread("coral-miner");
+
+    unsigned int nExtraNonce = 0;
+
+    try {
+        while (!ShutdownRequested()) {
+            // Create new block
+            std::unique_ptr<CBlockTemplate> pblocktemplate(BlockAssembler(::ChainstateActive(), &::EnsureAnyMempool()).CreateNewBlock(coinbaseScript));
+            if (!pblocktemplate.get()) {
+                LogPrintf("Error in CoralMiner: Could not create new block template\n");
+                MilliSleep(10000);
+                continue;
+            }
+            CBlock *pblock = &pblocktemplate->block;
+            IncrementExtraNonce(pblock, ::ChainstateActive().m_chain.Tip(), nExtraNonce);
+
+            LogPrintf("Running CoralMiner with %u transactions in block (%u bytes)\n",
+                     pblock->vtx.size(), ::GetSerializeSize(*pblock, PROTOCOL_VERSION));
+
+            // Search for RandomX solution
+            uint32_t nNonce = 0;
+            uint32_t nHashesDone = 0;
+            int64_t nStart = GetTimeMillis();
+
+            while (!ShutdownRequested()) {
+                bool found = ScanRandomXHash(pblock, nNonce, nHashesDone, chainparams.GetConsensus());
+
+                if (found) {
+                    // Found a solution!
+                    if (ProcessBlockFound(*pblock, chainparams)) {
+                        LogPrintf("CoralMiner: Block found! Hash: %s\n", pblock->GetHash().ToString());
+                    }
+                    break;
+                }
+
+                // Update time and check if we need a new block
+                if (GetTimeMillis() - nStart > 60000) { // 60 seconds
+                    break; // Get new block template
+                }
+
+                // Update block time
+                UpdateTime(pblock, chainparams.GetConsensus(), ::ChainstateActive().m_chain.Tip());
+
+                // Check if anything changed
+                if (pblock->nNonce >= 0x10000) {
+                    nNonce = 0;
+                    nHashesDone = 0;
+                }
+            }
+        }
+    } catch (const std::exception& e) {
+        LogPrintf("CoralMiner exception: %s\n", e.what());
+    }
+
+    LogPrintf("CoralMiner terminated\n");
+}
+
 } // namespace node

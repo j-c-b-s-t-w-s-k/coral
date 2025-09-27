@@ -1043,9 +1043,9 @@ void RegisterMiningRPCCommands(CRPCTable& t)
         {"mining", &submitblock},
         {"mining", &submitheader},
 
-        {"hidden", &generatetoaddress},
-        {"hidden", &generatetodescriptor},
-        {"hidden", &generateblock},
+        {"mining", &generatetoaddress},
+        {"mining", &generatetodescriptor},
+        {"mining", &generateblock},
         {"hidden", &generate},
     };
     for (const auto& c : commands) {

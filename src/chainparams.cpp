@@ -133,12 +133,12 @@ public:
         vSeeds.clear();
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0);  // '1' prefix for Coral addresses
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,88); // 'c' prefix for Coral script addresses
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);  // '3' prefix for Coral script addresses (Bitcoin standard)
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,156); // Private key prefix
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xC0, 0x72}; // 'coral' extended public key
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xA6, 0x1C}; // Extended private key
 
-        bech32_hrp = "coral";
+        bech32_hrp = "bc"; // Use Bitcoin's bech32 prefix for compatibility
 
         vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
 
