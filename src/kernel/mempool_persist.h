@@ -1,9 +1,9 @@
-// Copyright (c) 2022 The Bitcoin Core developers
+// Copyright (c) 2022 The Coral Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_KERNEL_MEMPOOL_PERSIST_H
-#define BITCOIN_KERNEL_MEMPOOL_PERSIST_H
+#ifndef CORAL_KERNEL_MEMPOOL_PERSIST_H
+#define CORAL_KERNEL_MEMPOOL_PERSIST_H
 
 #include <fs.h>
 
@@ -25,4 +25,4 @@ bool LoadMempool(CTxMemPool& pool, const fs::path& load_path,
 } // namespace kernel
 
 
-#endif // BITCOIN_KERNEL_MEMPOOL_PERSIST_H
+#endif // CORAL_KERNEL_MEMPOOL_PERSIST_H

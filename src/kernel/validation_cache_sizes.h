@@ -1,9 +1,9 @@
-// Copyright (c) 2022 The Bitcoin Core developers
+// Copyright (c) 2022 The Coral Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_KERNEL_VALIDATION_CACHE_SIZES_H
-#define BITCOIN_KERNEL_VALIDATION_CACHE_SIZES_H
+#ifndef CORAL_KERNEL_VALIDATION_CACHE_SIZES_H
+#define CORAL_KERNEL_VALIDATION_CACHE_SIZES_H
 
 #include <script/sigcache.h>
 
@@ -17,4 +17,4 @@ struct ValidationCacheSizes {
 };
 }
 
-#endif // BITCOIN_KERNEL_VALIDATION_CACHE_SIZES_H
+#endif // CORAL_KERNEL_VALIDATION_CACHE_SIZES_H

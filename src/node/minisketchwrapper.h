@@ -1,9 +1,9 @@
-// Copyright (c) 2021 The Bitcoin Core developers
+// Copyright (c) 2021 The Coral Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_NODE_MINISKETCHWRAPPER_H
-#define BITCOIN_NODE_MINISKETCHWRAPPER_H
+#ifndef CORAL_NODE_MINISKETCHWRAPPER_H
+#define CORAL_NODE_MINISKETCHWRAPPER_H
 
 #include <minisketch.h>
 
@@ -17,4 +17,4 @@ Minisketch MakeMinisketch32(size_t capacity);
 Minisketch MakeMinisketch32FP(size_t max_elements, uint32_t fpbits);
 } // namespace node
 
-#endif // BITCOIN_NODE_MINISKETCHWRAPPER_H
+#endif // CORAL_NODE_MINISKETCHWRAPPER_H

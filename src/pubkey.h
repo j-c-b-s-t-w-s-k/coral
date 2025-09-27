@@ -1,11 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2021 The Bitcoin Core developers
+// Copyright (c) 2009-2021 The Coral Core developers
 // Copyright (c) 2017 The Zcash developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_PUBKEY_H
-#define BITCOIN_PUBKEY_H
+#ifndef CORAL_PUBKEY_H
+#define CORAL_PUBKEY_H
 
 #include <hash.h>
 #include <serialize.h>
@@ -347,4 +347,4 @@ typedef struct secp256k1_context_struct secp256k1_context;
  *  by key.cpp. */
 const secp256k1_context* GetVerifyContext();
 
-#endif // BITCOIN_PUBKEY_H
+#endif // CORAL_PUBKEY_H

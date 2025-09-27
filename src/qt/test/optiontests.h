@@ -1,9 +1,9 @@
-// Copyright (c) 2019 The Bitcoin Core developers
+// Copyright (c) 2019 The Coral Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_TEST_OPTIONTESTS_H
-#define BITCOIN_QT_TEST_OPTIONTESTS_H
+#ifndef CORAL_QT_TEST_OPTIONTESTS_H
+#define CORAL_QT_TEST_OPTIONTESTS_H
 
 #include <qt/optionsmodel.h>
 #include <univalue.h>
@@ -29,4 +29,4 @@ private:
     util::Settings m_previous_settings;
 };
 
-#endif // BITCOIN_QT_TEST_OPTIONTESTS_H
+#endif // CORAL_QT_TEST_OPTIONTESTS_H

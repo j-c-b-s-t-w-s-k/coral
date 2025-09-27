@@ -1,5 +1,5 @@
 // Copyright (c) 2010 Satoshi Nakamoto
-// Copyright (c) 2009-2021 The Bitcoin Core developers
+// Copyright (c) 2009-2021 The Coral Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -16,24 +16,22 @@
 #include <assert.h>
 #include <limits>
 
-static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
+static CBlock CreateGenesisBlockHeaderOnly(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion)
 {
-    CMutableTransaction txNew;
-    txNew.nVersion = 1;
-    txNew.vin.resize(1);
-    txNew.vout.resize(1);
-    txNew.vin[0].scriptSig = CScript() << 486604799 << CScriptNum(4) << std::vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
-    txNew.vout[0].nValue = genesisReward;
-    txNew.vout[0].scriptPubKey = genesisOutputScript;
-
     CBlock genesis;
     genesis.nTime    = nTime;
     genesis.nBits    = nBits;
     genesis.nNonce   = nNonce;
     genesis.nVersion = nVersion;
-    genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
+    // No transactions - just a header
+    genesis.vtx.clear();
     genesis.hashPrevBlock.SetNull();
-    genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
+
+    // Embed Polish message in merkle root hash: "FUCK SATOSHI! Był głupim snobem"
+    // "FUCK SATOSHI! He was a foolish snob" in Polish
+    const std::string polishMessage = "FUCK SATOSHI! Byl glupim snobem";
+    genesis.hashMerkleRoot = Hash(polishMessage.begin(), polishMessage.end());
+
     return genesis;
 }
 
@@ -48,12 +46,10 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
  *   vMerkleTree: 4a5e1e
  */
-static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
+// Header-only genesis block - no transactions
+static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion)
 {
-    const char* pszTimestamp = "Supreme Court keeps in place Trump funding freeze that threatens billions of dollars in foreign aid - Coral Genesis Sept 27, 2025";
-    // FUCK SATOSHI - Coral is the evolution beyond Bitcoin
-    const CScript genesisOutputScript = CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f") << OP_CHECKSIG;
-    return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
+    return CreateGenesisBlockHeaderOnly(nTime, nNonce, nBits, nVersion);
 }
 
 /**
@@ -112,11 +108,17 @@ public:
         m_assumed_blockchain_size = 496;
         m_assumed_chain_state_size = 6;
 
-        genesis = CreateGenesisBlock(1727432400, 1337, 0x1d00ffff, 1, 100 * COIN);
+        // Genesis block with extremely high difficulty (21e800) - header only, no transactions
+        uint32_t nTime = static_cast<uint32_t>(time(nullptr));
+        uint32_t nNonce = 0; // Will be found during mining
+        uint32_t nBits = 0x03000015; // Very small target for 21e800 difficulty
+
+        genesis = CreateGenesisBlock(nTime, nNonce, nBits, 1); // Header-only genesis block
         consensus.hashGenesisBlock = genesis.GetHash();
+
         // Genesis block assertions will be filled after mining
         // assert(consensus.hashGenesisBlock == uint256S("0x[GENESIS_HASH]"));
-        // assert(genesis.hashMerkleRoot == uint256S("0x[MERKLE_ROOT]"));
+        // assert(genesis.hashMerkleRoot.IsNull()); // No merkle root for header-only block
 
         // Note that of those which support the service bits prefix, most only support a subset of
         // possible options.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2018-2021 The Bitcoin Core developers
+# Copyright (c) 2018-2021 The Coral Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test the Partially Signed Transaction RPCs.
@@ -29,7 +29,7 @@ from test_framework.psbt import (
     PSBT_IN_HASH256,
     PSBT_OUT_TAP_TREE,
 )
-from test_framework.test_framework import BitcoinTestFramework
+from test_framework.test_framework import CoralTestFramework
 from test_framework.util import (
     assert_approx,
     assert_equal,
@@ -46,7 +46,7 @@ import os
 
 
 # Create one-input, one-output, no-fee transaction:
-class PSBTTest(BitcoinTestFramework):
+class PSBTTest(CoralTestFramework):
 
     def set_test_params(self):
         self.num_nodes = 3

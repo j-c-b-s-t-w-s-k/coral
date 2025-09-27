@@ -1,9 +1,9 @@
-// Copyright (c) 2010-2022 The Bitcoin Core developers
+// Copyright (c) 2010-2022 The Coral Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_UTIL_SYSERROR_H
-#define BITCOIN_UTIL_SYSERROR_H
+#ifndef CORAL_UTIL_SYSERROR_H
+#define CORAL_UTIL_SYSERROR_H
 
 #include <string>
 
@@ -13,4 +13,4 @@
  */
 std::string SysErrorString(int err);
 
-#endif // BITCOIN_UTIL_SYSERROR_H
+#endif // CORAL_UTIL_SYSERROR_H

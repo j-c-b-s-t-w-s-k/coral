@@ -1,9 +1,9 @@
-// Copyright (c) 2019-2021 The Bitcoin Core developers
+// Copyright (c) 2019-2021 The Coral Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_CREATEWALLETDIALOG_H
-#define BITCOIN_QT_CREATEWALLETDIALOG_H
+#ifndef CORAL_QT_CREATEWALLETDIALOG_H
+#define CORAL_QT_CREATEWALLETDIALOG_H
 
 #include <QDialog>
 
@@ -43,4 +43,4 @@ private:
     bool m_has_signers = false;
 };
 
-#endif // BITCOIN_QT_CREATEWALLETDIALOG_H
+#endif // CORAL_QT_CREATEWALLETDIALOG_H
