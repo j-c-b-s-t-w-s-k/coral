@@ -127,6 +127,28 @@ struct Params {
     bool signet_blocks{false};
     std::vector<uint8_t> signet_challenge;
 
+    // Choral L1 multi-lane parameters
+    /** Minimum number of valid receipts per block (receipt lane) */
+    uint64_t nMinReceiptsPerBlock{10};
+    /** Maximum receipts per block */
+    uint64_t nMaxReceiptsPerBlock{1000};
+    /** Minimum messages per block (service lane) */
+    uint64_t nMinMessagesPerBlock{0};
+    /** Maximum messages per block */
+    uint64_t nMaxMessagesPerBlock{100};
+    /** Minimum subnet updates per block (service lane) */
+    uint64_t nMinSubnetUpdatesPerBlock{0};
+    /** Maximum subnet updates per block */
+    uint64_t nMaxSubnetUpdatesPerBlock{100};
+    /** Receipt difficulty limit */
+    uint256 powLimitReceipt;
+    /** Service difficulty limit (fixed in v0) */
+    uint256 powLimitService;
+    /** Height at which Choral L1 activates */
+    int ChoralActivationHeight{0};
+    /** Total coin supply (2.1M for Choral) */
+    int64_t nTotalSupply{2100000 * 100000000LL}; // 2.1M coins
+
     int DeploymentHeight(BuriedDeployment dep) const
     {
         switch (dep) {

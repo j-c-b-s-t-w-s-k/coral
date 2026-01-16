@@ -1478,12 +1478,14 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
     if (quarterings >= 32)  // Reduced from 64 since we quarter faster
         return 0;
 
-    // Coral: Start with 100 CORAL per block
-    CAmount nSubsidy = 100 * COIN;
+    // Choral: Start with 7.5 CHORAL per block for 2.1M total supply
+    // Total supply calculation with quartering:
+    // 7.5 * 210k * (1 + 1/4 + 1/16 + 1/64 + ...) = 7.5 * 210k * (4/3) = 2.1M coins
+    CAmount nSubsidy = 750000000LL;  // 7.5 CHORAL (in satoshis: 7.5 * 100,000,000)
 
-    // Coral: QUARTER the reward every epoch instead of halving
-    // 100 → 25 → 6.25 → 1.5625 → 0.390625 → etc.
-    // Much more aggressive deflationary model than Coral
+    // Choral: QUARTER the reward every epoch instead of halving
+    // 7.5 → 1.875 → 0.46875 → 0.1171875 → etc.
+    // Aggressive deflationary model targeting 2.1M total supply
     for (int i = 0; i < quarterings; i++) {
         nSubsidy >>= 2;  // Divide by 4 (quarter) instead of 2 (halve)
     }

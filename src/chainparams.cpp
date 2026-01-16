@@ -94,6 +94,20 @@ public:
         consensus.nMinimumChainWork = uint256S("0x00000000000000000000000000000000000000003404ba0801921119f903495e");
         consensus.defaultAssumeValid = uint256S("0x00000000000000000009c97098b5295f7e5f183ac811fb5d1534040adb93cabd"); // 751565
 
+        // Choral L1 multi-lane parameters
+        consensus.ChoralActivationHeight = 0; // Active from genesis
+        consensus.nTotalSupply = 2100000 * 100000000LL; // 2.1M CHORAL
+        consensus.nMinReceiptsPerBlock = 10;
+        consensus.nMaxReceiptsPerBlock = 1000;
+        consensus.nMinMessagesPerBlock = 0;
+        consensus.nMaxMessagesPerBlock = 100;
+        consensus.nMinSubnetUpdatesPerBlock = 0;
+        consensus.nMaxSubnetUpdatesPerBlock = 100;
+        // Receipt PoW limit (easier than base PoW)
+        consensus.powLimitReceipt = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        // Service PoW limit (fixed, very easy for v0)
+        consensus.powLimitService = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+
         /**
          * The message start string is designed to be unlikely to occur in normal data.
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce

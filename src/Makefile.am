@@ -584,6 +584,12 @@ libcoral_consensus_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libcoral_consensus_a_SOURCES = \
   arith_uint256.cpp \
   arith_uint256.h \
+  choral/choral_primitives.cpp \
+  choral/choral_primitives.h \
+  choral/subnet_interface.cpp \
+  choral/subnet_interface.h \
+  choral/coraldns.cpp \
+  choral/coraldns.h \
   consensus/amount.h \
   consensus/merkle.cpp \
   consensus/merkle.h \
