@@ -829,6 +829,20 @@ coral_util_LDADD = -lrandomx \
   $(LIBCORAL_CONSENSUS) \
   $(LIBCORAL_CRYPTO) \
   $(LIBSECP256K1)
+
+# genesis-miner binary #
+noinst_PROGRAMS += genesis-miner
+genesis_miner_SOURCES = genesis-miner.cpp
+genesis_miner_CPPFLAGS = $(AM_CPPFLAGS) $(CORAL_INCLUDES)
+genesis_miner_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+genesis_miner_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) $(PTHREAD_FLAGS)
+genesis_miner_LDADD = -lrandomx \
+  $(LIBCORAL_COMMON) \
+  $(LIBCORAL_UTIL) \
+  $(LIBUNIVALUE) \
+  $(LIBCORAL_CONSENSUS) \
+  $(LIBCORAL_CRYPTO) \
+  $(LIBSECP256K1)
 #
 
 # coral-chainstate binary #

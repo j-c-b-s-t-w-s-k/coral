@@ -4,7 +4,7 @@
 
 bin_PROGRAMS += qt/bitcoin-qt
 
-if BUILD_BITCOIN_GUI
+if BUILD_CORAL_GUI
   bin_PROGRAMS += bitcoin-gui
 endif
 

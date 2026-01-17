@@ -16,40 +16,55 @@
 #include <assert.h>
 #include <limits>
 
-static CBlock CreateGenesisBlockHeaderOnly(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion)
+/**
+ * Build the genesis block with a coinbase transaction.
+ *
+ * The coinbase contains the famous newspaper headline as proof-of-date,
+ * and pays the block reward to the genesis public key.
+ *
+ * Genesis Message: "17/Jan/2026 Copper prices hit historic highs as electric vehicle demand surges"
+ * Genesis Public Key: 020600a997bdceb13273e9de1db3c252f91731fba6cfb4a33411dccb17f113f8af
+ */
+static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript,
+                                  uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion,
+                                  const CAmount& genesisReward)
 {
+    CMutableTransaction txNew;
+    txNew.nVersion = 1;
+    txNew.vin.resize(1);
+    txNew.vout.resize(1);
+    // Coinbase scriptSig: OP_PUSHDATA of nBits + OP_PUSHDATA of extra nonce (4) + timestamp message
+    txNew.vin[0].scriptSig = CScript() << 486604799 << CScriptNum(4) << std::vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
+    txNew.vout[0].nValue = genesisReward;
+    txNew.vout[0].scriptPubKey = genesisOutputScript;
+
     CBlock genesis;
     genesis.nTime    = nTime;
     genesis.nBits    = nBits;
     genesis.nNonce   = nNonce;
     genesis.nVersion = nVersion;
-    // No transactions - just a header
-    genesis.vtx.clear();
+    genesis.vtx.push_back(MakeTransactionRef(std::move(txNew)));
     genesis.hashPrevBlock.SetNull();
-
-    // Embed Polish message in merkle root hash: "FUCK SATOSHI! Był głupim snobem"
-    // "FUCK SATOSHI! He was a foolish snob" in Polish
-    const std::string polishMessage = "FUCK SATOSHI! Byl glupim snobem";
-    genesis.hashMerkleRoot = Hash(polishMessage.begin(), polishMessage.end());
-
+    genesis.hashMerkleRoot = BlockMerkleRoot(genesis);
     return genesis;
 }
 
 /**
- * Build the genesis block. Note that the output of its generation
- * transaction cannot be spent since it did not originally exist in the
- * database.
- *
- * CBlock(hash=000000000019d6, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=4a5e1e, nTime=1231006505, nBits=1d00ffff, nNonce=2083236893, vtx=1)
- *   CTransaction(hash=4a5e1e, ver=1, vin.size=1, vout.size=1, nLockTime=0)
- *     CTxIn(COutPoint(000000, -1), coinbase 04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73)
- *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
- *   vMerkleTree: 4a5e1e
+ * Build the genesis block with default Coral parameters.
  */
-// Header-only genesis block - no transactions
-static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion)
+static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-    return CreateGenesisBlockHeaderOnly(nTime, nNonce, nBits, nVersion);
+    // Genesis message - newspaper headline as proof of date (like Satoshi's "Chancellor on brink...")
+    const char* pszTimestamp = "17/Jan/2026 Copper prices hit historic highs as electric vehicle demand surges";
+
+    // Genesis public key (compressed) - block reward goes here
+    // Private key: a027030ccc1367613206d231d86f0551f82d43962f923e56f1d2fd6745ca09b3
+    const std::vector<unsigned char> genesisPubKey = ParseHex("020600a997bdceb13273e9de1db3c252f91731fba6cfb4a33411dccb17f113f8af");
+
+    // Pay-to-public-key script (like Bitcoin's genesis)
+    CScript genesisOutputScript = CScript() << genesisPubKey << OP_CHECKSIG;
+
+    return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
 }
 
 /**
@@ -108,17 +123,19 @@ public:
         m_assumed_blockchain_size = 496;
         m_assumed_chain_state_size = 6;
 
-        // Genesis block with extremely high difficulty (21e800) - header only, no transactions
-        uint32_t nTime = static_cast<uint32_t>(time(nullptr));
+        // Genesis block - 17/Jan/2026 "Copper prices hit historic highs as electric vehicle demand surges"
+        // Timestamp: 1768629600 (January 17, 2026 00:00:00 UTC)
+        // Block reward: 50 CORAL
+        uint32_t nTime = 1768629600;
         uint32_t nNonce = 0; // Will be found during mining
-        uint32_t nBits = 0x03000015; // Very small target for 21e800 difficulty
+        uint32_t nBits = 0x1d00ffff; // Standard initial difficulty (7 leading zero bytes)
 
-        genesis = CreateGenesisBlock(nTime, nNonce, nBits, 1); // Header-only genesis block
+        genesis = CreateGenesisBlock(nTime, nNonce, nBits, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         // Genesis block assertions will be filled after mining
         // assert(consensus.hashGenesisBlock == uint256S("0x[GENESIS_HASH]"));
-        // assert(genesis.hashMerkleRoot.IsNull()); // No merkle root for header-only block
+        // assert(genesis.hashMerkleRoot == uint256S("0x[MERKLE_ROOT]"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
         // possible options.
@@ -227,7 +244,7 @@ public:
         m_assumed_blockchain_size = 42;
         m_assumed_chain_state_size = 2;
 
-        genesis = CreateGenesisBlock(1727432400, 2337, 0x1d00ffff, 1, 100 * COIN);
+        genesis = CreateGenesisBlock(1768629600, 0, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
         // Testnet genesis assertions - will be filled after mining
         // assert(consensus.hashGenesisBlock == uint256S("0x[TESTNET_GENESIS_HASH]"));
@@ -364,7 +381,7 @@ public:
         nDefaultPort = 38334; // Coral signet port
         nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1727432400, 3337, 0x1e0377ae, 1, 100 * COIN);
+        genesis = CreateGenesisBlock(1768629600, 0, 0x1e0377ae, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
         // Signet genesis assertions - will be filled after mining
         // assert(consensus.hashGenesisBlock == uint256S("0x[SIGNET_GENESIS_HASH]"));
@@ -437,7 +454,7 @@ public:
 
         UpdateActivationParametersFromArgs(args);
 
-        genesis = CreateGenesisBlock(1727432400, 2, 0x207fffff, 1, 100 * COIN);
+        genesis = CreateGenesisBlock(1768629600, 0, 0x207fffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
         // Regtest genesis assertions - will be filled after mining
         // assert(consensus.hashGenesisBlock == uint256S("0x[REGTEST_GENESIS_HASH]"));

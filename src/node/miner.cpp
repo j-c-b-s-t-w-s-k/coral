@@ -490,6 +490,8 @@ bool ScanRandomXHash(CBlockHeader *pblock, uint32_t& nNonce, uint32_t nHashesDon
 }
 
 // Enhanced mining loop with RandomX
+// TODO: Update to use new chainman-based APIs
+#if 0
 static bool ProcessBlockFound(const CBlock& block, const CChainParams& chainparams)
 {
     LogPrintf("%s\n", block.ToString());
@@ -510,8 +512,11 @@ static bool ProcessBlockFound(const CBlock& block, const CChainParams& chainpara
 
     return true;
 }
+#endif
 
 // Main mining loop
+// TODO: Update to use new chainman-based APIs
+#if 0
 void CoralMiner(const CChainParams& chainparams, const CScript& coinbaseScript, CConnman* connman)
 {
     LogPrintf("CoralMiner started with RandomX\n");
@@ -572,5 +577,6 @@ void CoralMiner(const CChainParams& chainparams, const CScript& coinbaseScript, 
 
     LogPrintf("CoralMiner terminated\n");
 }
+#endif
 
 } // namespace node
