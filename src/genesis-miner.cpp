@@ -40,9 +40,11 @@ static uint32_t winningNonce = 0;
 static uint256 winningHash;
 static uint256 winningMerkle;
 
-// Shared RandomX cache (read-only after init, can be shared across threads)
+// Shared RandomX cache and dataset (read-only after init, can be shared across threads)
 static randomx_cache* sharedCache = nullptr;
+static randomx_dataset* sharedDataset = nullptr;
 static randomx_flags sharedFlags;
+static bool useFullMem = true;  // Use 2GB dataset for faster mining
 
 void PrintProgress() {
     auto startTime = std::chrono::steady_clock::now();
@@ -97,8 +99,8 @@ void MineGenesis(uint32_t nBits, uint32_t startNonce, uint32_t step, int threadI
         printf("Coinbase Tx: %s\n\n", genesis.vtx[0]->GetHash().ToString().c_str());
     }
 
-    // Create thread-local VM using shared cache
-    randomx_vm* vm = randomx_create_vm(sharedFlags, sharedCache, nullptr);
+    // Create thread-local VM using shared cache/dataset
+    randomx_vm* vm = randomx_create_vm(sharedFlags, sharedCache, sharedDataset);
     if (!vm) {
         printf("Thread %d: Failed to create RandomX VM\n", threadId);
         return;
@@ -210,10 +212,15 @@ int main(int argc, char* argv[]) {
     // Enable hardware AES if available
     sharedFlags = static_cast<randomx_flags>(sharedFlags | RANDOMX_FLAG_HARD_AES);
 
+    // Enable full memory mode for much faster hashing (uses 2GB RAM)
+    if (useFullMem) {
+        sharedFlags = static_cast<randomx_flags>(sharedFlags | RANDOMX_FLAG_FULL_MEM);
+    }
+
     printf("  RandomX flags: 0x%x\n", sharedFlags);
     printf("  JIT:           %s\n", (sharedFlags & RANDOMX_FLAG_JIT) ? "Enabled" : "Disabled");
     printf("  Hard AES:      %s\n", (sharedFlags & RANDOMX_FLAG_HARD_AES) ? "Enabled" : "Disabled");
-    printf("  Full Memory:   %s\n", (sharedFlags & RANDOMX_FLAG_FULL_MEM) ? "Enabled" : "Disabled");
+    printf("  Full Memory:   %s (2GB dataset = FAST)\n", (sharedFlags & RANDOMX_FLAG_FULL_MEM) ? "Enabled" : "Disabled");
 
     // Allocate shared cache
     printf("\nAllocating RandomX cache (~256 MB)...\n");
@@ -224,17 +231,48 @@ int main(int argc, char* argv[]) {
     }
 
     // Initialize cache with key (genesis prev block hash = all zeros)
-    printf("Initializing cache (this takes ~30 seconds)...\n");
+    printf("Initializing cache...\n");
     char key[65];
     memset(key, '0', 64);
     key[64] = '\0';
 
-    auto initStart = std::chrono::steady_clock::now();
     randomx_init_cache(sharedCache, key, 64);
-    auto initEnd = std::chrono::steady_clock::now();
-    auto initTime = std::chrono::duration_cast<std::chrono::seconds>(initEnd - initStart).count();
 
-    printf("Cache initialized in %lld seconds\n\n", (long long)initTime);
+    // Allocate and initialize dataset for full memory mode
+    if (useFullMem) {
+        printf("Allocating RandomX dataset (~2 GB)...\n");
+        sharedDataset = randomx_alloc_dataset(sharedFlags);
+        if (!sharedDataset) {
+            printf("ERROR: Failed to allocate RandomX dataset! Try with less threads or disable full memory mode.\n");
+            randomx_release_cache(sharedCache);
+            return 1;
+        }
+
+        printf("Initializing dataset (this takes 1-2 minutes, using %d threads)...\n", numThreads);
+        auto initStart = std::chrono::steady_clock::now();
+
+        // Initialize dataset in parallel
+        uint32_t datasetItemCount = randomx_dataset_item_count();
+        uint32_t itemsPerThread = datasetItemCount / numThreads;
+
+        std::vector<std::thread> initThreads;
+        for (int i = 0; i < numThreads; i++) {
+            uint32_t startItem = i * itemsPerThread;
+            uint32_t count = (i == numThreads - 1) ? (datasetItemCount - startItem) : itemsPerThread;
+            initThreads.emplace_back([startItem, count]() {
+                randomx_init_dataset(sharedDataset, sharedCache, startItem, count);
+            });
+        }
+        for (auto& t : initThreads) {
+            t.join();
+        }
+
+        auto initEnd = std::chrono::steady_clock::now();
+        auto initTime = std::chrono::duration_cast<std::chrono::seconds>(initEnd - initStart).count();
+        printf("Dataset initialized in %lld seconds\n\n", (long long)initTime);
+    } else {
+        printf("Cache initialized (light mode - slower but less RAM)\n\n");
+    }
 
     printf("Starting mining with %d threads...\n\n", numThreads);
 
@@ -256,6 +294,9 @@ int main(int argc, char* argv[]) {
     progressThread.join();
 
     // Cleanup
+    if (sharedDataset) {
+        randomx_release_dataset(sharedDataset);
+    }
     randomx_release_cache(sharedCache);
 
     if (winningNonce != 0 || found) {
