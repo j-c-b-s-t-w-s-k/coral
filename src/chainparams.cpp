@@ -127,15 +127,13 @@ public:
         // Timestamp: 1768629600 (January 17, 2026 00:00:00 UTC)
         // Block reward: 50 CORAL
         uint32_t nTime = 1768629600;
-        uint32_t nNonce = 0; // Will be found during mining
-        uint32_t nBits = 0x1d00ffff; // Standard initial difficulty (7 leading zero bytes)
+        uint32_t nNonce = 7734;
+        uint32_t nBits = 0x1f00ffff;
 
         genesis = CreateGenesisBlock(nTime, nNonce, nBits, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-
-        // Genesis block assertions will be filled after mining
-        // assert(consensus.hashGenesisBlock == uint256S("0x[GENESIS_HASH]"));
-        // assert(genesis.hashMerkleRoot == uint256S("0x[MERKLE_ROOT]"));
+        assert(consensus.hashGenesisBlock == uint256S("0x0000895a294b75ed737eec0e490c67c1ce51fbb13ceb5f7b891ede12cdb94b9d"));
+        assert(genesis.hashMerkleRoot == uint256S("0xcfb6ccf7da8a1173fe278ac78cabc556a261c7db3c4f3c24101f165194a85b7c"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
         // possible options.
