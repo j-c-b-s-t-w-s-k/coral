@@ -88,7 +88,8 @@ public:
         consensus.CSVHeight = 419328; // 000000000000000004a1b34462cb8aeebd5799177f7a29cf28f2d1961716b5b5
         consensus.SegwitHeight = std::numeric_limits<int>::max(); // SegWit disabled in Coral
         consensus.MinBIP9WarningHeight = 0; // No SegWit warning needed
-        consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        // powLimit must allow nBits of 0x1e00ffff (Coral initial difficulty - easier than Bitcoin)
+        consensus.powLimit = uint256S("0000ffff00000000000000000000000000000000000000000000000000000000");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -127,13 +128,14 @@ public:
         // Timestamp: 1768629600 (January 17, 2026 00:00:00 UTC)
         // Block reward: 50 CORAL
         uint32_t nTime = 1768629600;
-        uint32_t nNonce = 7734;
-        uint32_t nBits = 0x1f00ffff;
+        uint32_t nNonce = 7497377;
+        uint32_t nBits = 0x1e00ffff;
 
         genesis = CreateGenesisBlock(nTime, nNonce, nBits, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x0000895a294b75ed737eec0e490c67c1ce51fbb13ceb5f7b891ede12cdb94b9d"));
-        assert(genesis.hashMerkleRoot == uint256S("0xcfb6ccf7da8a1173fe278ac78cabc556a261c7db3c4f3c24101f165194a85b7c"));
+
+        assert(consensus.hashGenesisBlock == uint256S("0x00000065614d33a5d0452c96f9b2da0755bec2963c0fe6bfa87e6e019993cbd7"));
+        assert(genesis.hashMerkleRoot == uint256S("0x952f0fff49e1a16c0b4e2054c7559f01642c4b1d79b91688d09a42caa89957af"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
         // possible options.
@@ -212,7 +214,8 @@ public:
         consensus.CSVHeight = 770112; // 00000000025e930139bac5c6c31a403776da130831ab85be56578f3fa75369bb
         consensus.SegwitHeight = std::numeric_limits<int>::max(); // SegWit disabled in Coral testnet
         consensus.MinBIP9WarningHeight = 0; // No SegWit warning needed
-        consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        // powLimit must allow nBits of 0x1e00ffff (Coral initial difficulty - easier than Bitcoin)
+        consensus.powLimit = uint256S("0000ffff00000000000000000000000000000000000000000000000000000000");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = true;

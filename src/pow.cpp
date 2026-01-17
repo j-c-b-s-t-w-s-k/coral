@@ -263,6 +263,12 @@ uint256 GetRandomXHash(const CBlockHeader& block) {
 
 // Check RandomX proof of work
 bool CheckRandomXProofOfWork(const CBlockHeader& block, unsigned int nBits, const Consensus::Params& params) {
+    // Genesis block uses SHA256d (hashPrevBlock is null)
+    // All subsequent blocks use RandomX
+    if (block.hashPrevBlock.IsNull()) {
+        return CheckProofOfWork(block.GetHash(), nBits, params);
+    }
+
     uint256 randomx_hash = GetRandomXHash(block);
     return CheckProofOfWork(randomx_hash, nBits, params);
 }
