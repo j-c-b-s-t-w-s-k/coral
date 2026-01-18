@@ -125,7 +125,7 @@ cd coral
 make -j$(nproc)
 ```
 
-#### macOS
+#### macOS (Intel x86_64)
 ```bash
 # Install Homebrew if not already installed
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -140,6 +140,51 @@ cd coral
 ./configure --with-gui=qt5
 make -j$(sysctl -n hw.physicalcpu)
 ```
+
+#### macOS (Apple Silicon M1/M2/M3/M4)
+```bash
+# Install Homebrew (ARM version at /opt/homebrew)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Add Homebrew to PATH (if not already done)
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Install dependencies
+brew install automake libtool boost pkg-config libevent qt@5 qrencode miniupnpc zeromq berkeley-db@4
+
+# Build RandomX from source (ensures ARM64 native build)
+git clone https://github.com/tevador/RandomX.git
+cd RandomX
+mkdir build && cd build
+cmake -DARCH=native ..
+make -j$(sysctl -n hw.ncpu)
+sudo make install
+cd ../..
+
+# Clone and build Coral
+git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
+cd coral
+./autogen.sh
+
+# Configure with proper paths for Apple Silicon Homebrew
+./configure --with-gui=qt5 \
+    CPPFLAGS="-I/opt/homebrew/include" \
+    LDFLAGS="-L/opt/homebrew/lib -L/usr/local/lib" \
+    PKG_CONFIG_PATH="/opt/homebrew/opt/qt@5/lib/pkgconfig:/opt/homebrew/lib/pkgconfig"
+
+# Build using all cores
+make -j$(sysctl -n hw.ncpu)
+
+# Run the Qt client
+./src/qt/bitcoin-qt
+```
+
+**Apple Silicon Notes:**
+- Native ARM64 builds are significantly faster than Rosetta 2 emulation
+- RandomX performs well on M-series chips (~2-4 KH/s per efficiency core, ~4-8 KH/s per performance core)
+- M4 Mac Mini should achieve ~15-25 KH/s total hashrate
+- Ensure you have at least 8GB RAM (16GB recommended for mining)
 
 #### Windows (Cross-Compilation)
 ```bash
