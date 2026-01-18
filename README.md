@@ -154,6 +154,75 @@ cd coral
 
 ---
 
+## 🖥️ **Qt GUI Client (coral-qt)**
+
+The Qt GUI provides a full graphical wallet interface with network monitoring, transaction history, and mining controls.
+
+### Building the Qt Client
+
+#### Linux (Ubuntu/Debian)
+```bash
+# Install Qt5 dependencies (in addition to base dependencies above)
+sudo apt install -y qtbase5-dev qttools5-dev qttools5-dev-tools libqrencode-dev
+
+# Clone and build with GUI
+git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
+cd coral
+./autogen.sh
+./configure --with-gui=qt5
+make -j$(nproc)
+
+# Run the Qt client
+./src/qt/coral-qt
+```
+
+#### macOS
+```bash
+# Install dependencies including Qt
+brew install automake libtool boost pkg-config libevent qt@5 qrencode berkeley-db@4
+
+# Clone and build
+git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
+cd coral
+./autogen.sh
+./configure --with-gui=qt5
+make -j$(sysctl -n hw.physicalcpu)
+
+# Run the Qt client
+./src/qt/coral-qt
+
+# Optional: Create a .dmg installer
+pip3 install ds_store mac_alias
+make deploy
+```
+
+### Qt Client Features
+- **Wallet Management**: Send, receive, and manage CORAL transactions
+- **Mining Controls**: Start/stop mining directly from the GUI
+- **Network Status**: Real-time peer connections and sync status
+- **Address Book**: Organize and label your addresses
+- **Transaction History**: Complete history with search and filtering
+- **QR Code Support**: Generate QR codes for receiving addresses
+- **Dark Theme**: Modern dark UI theme included
+
+### Running the Qt Client
+
+```bash
+# Start with default settings (connects to mainnet)
+./src/qt/coral-qt
+
+# Start on testnet
+./src/qt/coral-qt -testnet
+
+# Start on regtest (for development)
+./src/qt/coral-qt -regtest
+
+# Start with specific data directory
+./src/qt/coral-qt -datadir=/path/to/data
+```
+
+---
+
 ## 📖 **Documentation**
 
 ### For Beginners
