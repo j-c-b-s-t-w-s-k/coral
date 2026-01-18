@@ -8,7 +8,10 @@
 #include <qt/askpassphrasedialog.h>
 #include <qt/clientmodel.h>
 #include <qt/guiutil.h>
+#include <qt/marketpage.h>
+#include <qt/miningpage.h>
 #include <qt/networkpage.h>
+// #include <qt/pokerpage.h>
 #include <qt/optionsmodel.h>
 #include <qt/overviewpage.h>
 #include <qt/platformstyle.h>
@@ -42,8 +45,17 @@ WalletView::WalletView(WalletModel* wallet_model, const PlatformStyle* _platform
     overviewPage = new OverviewPage(platformStyle);
     overviewPage->setWalletModel(walletModel);
 
+    // Market page for decentralized marketplace
+    marketPage = new MarketPage(platformStyle);
+
+    // Mining page
+    miningPage = new MiningPage(platformStyle);
+
     // Network page for peer discovery and mempool
     networkPage = new NetworkPage(platformStyle);
+
+    // Poker page for decentralized poker games (disabled)
+    // pokerPage = new PokerPage(platformStyle);
 
     transactionsPage = new QWidget(this);
     QVBoxLayout *vbox = new QVBoxLayout();
@@ -75,7 +87,10 @@ WalletView::WalletView(WalletModel* wallet_model, const PlatformStyle* _platform
     usedReceivingAddressesPage->setModel(walletModel->getAddressTableModel());
 
     addWidget(overviewPage);
+    addWidget(marketPage);
+    addWidget(miningPage);
     addWidget(networkPage);
+    // addWidget(pokerPage);
     addWidget(transactionsPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
@@ -123,7 +138,13 @@ void WalletView::setClientModel(ClientModel *_clientModel)
     this->clientModel = _clientModel;
 
     overviewPage->setClientModel(_clientModel);
+    marketPage->setClientModel(_clientModel);
+    marketPage->setWalletModel(walletModel);
+    miningPage->setClientModel(_clientModel);
+    miningPage->setWalletModel(walletModel);
     networkPage->setClientModel(_clientModel);
+    // pokerPage->setClientModel(_clientModel);
+    // pokerPage->setWalletModel(walletModel);
     sendCoinsPage->setClientModel(_clientModel);
     walletModel->setClientModel(_clientModel);
 }
@@ -154,10 +175,25 @@ void WalletView::gotoOverviewPage()
     setCurrentWidget(overviewPage);
 }
 
+void WalletView::gotoMarketPage()
+{
+    setCurrentWidget(marketPage);
+}
+
+void WalletView::gotoMiningPage()
+{
+    setCurrentWidget(miningPage);
+}
+
 void WalletView::gotoNetworkPage()
 {
     setCurrentWidget(networkPage);
 }
+
+// void WalletView::gotoPokerPage()
+// {
+//     setCurrentWidget(pokerPage);
+// }
 
 void WalletView::gotoHistoryPage()
 {

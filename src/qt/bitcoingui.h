@@ -136,6 +136,9 @@ private:
     QToolBar* appToolBar = nullptr;
     QAction* overviewAction = nullptr;
     QAction* networkAction = nullptr;
+    QAction* marketAction = nullptr;
+    QAction* miningAction = nullptr;
+    // QAction* pokerAction = nullptr;
     QAction* historyAction = nullptr;
     QAction* quitAction = nullptr;
     QAction* sendCoinsAction = nullptr;
@@ -279,6 +282,12 @@ public Q_SLOTS:
     void gotoOverviewPage();
     /** Switch to network page */
     void gotoNetworkPage();
+    /** Switch to market page */
+    void gotoMarketPage();
+    /** Switch to mining page */
+    void gotoMiningPage();
+    // /** Switch to poker page */
+    // void gotoPokerPage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch to receive coins page */

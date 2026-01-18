@@ -22,9 +22,9 @@
 #include <mutex>
 
 // Genesis block parameters - must match chainparams.cpp
-static const uint32_t GENESIS_TIME = 1737100800;  // January 17, 2025 00:00:00 UTC
+static const uint32_t GENESIS_TIME = 1768694400;  // January 18, 2026 00:00:00 UTC
 static const int32_t GENESIS_VERSION = 1;
-static const char* GENESIS_MESSAGE = "17/Jan/2026 Coral - RandomX + 21e8 micro-PoW";
+static const char* GENESIS_MESSAGE = "18/Jan/2026 Trump tariffs take effect as thousands rally for Greenland";
 
 // Mining state
 static std::atomic<bool> found(false);

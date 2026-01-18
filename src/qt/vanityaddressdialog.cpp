@@ -87,18 +87,18 @@ VanityAddressDialog::~VanityAddressDialog()
 
 void VanityAddressDialog::setupUI()
 {
-    // Dark theme styling
+    // Dark theme styling - white on black
     setStyleSheet(
-        "QDialog { background-color: #1a1a2e; }"
-        "QLabel { color: #eaeaea; }"
-        "QGroupBox { color: #eaeaea; background-color: #16213e; border: 2px solid #FF6B35; border-radius: 8px; margin-top: 10px; padding-top: 10px; }"
-        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; color: #FF6B35; }"
-        "QLineEdit { padding: 8px; border: 1px solid #FF6B35; border-radius: 4px; background-color: #0f3460; color: #eaeaea; }"
-        "QTextEdit { padding: 8px; border: 1px solid #FF6B35; border-radius: 4px; background-color: #0f3460; color: #eaeaea; font-family: monospace; }"
-        "QPushButton { background-color: #FF6B35; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; }"
-        "QPushButton:hover { background-color: #e55a2b; }"
-        "QPushButton:pressed { background-color: #cc4f26; }"
-        "QPushButton:disabled { background-color: #666; }"
+        "QDialog { background-color: #000000; }"
+        "QLabel { color: #ffffff; }"
+        "QGroupBox { color: #ffffff; background-color: #111111; border: 1px solid #333333; border-radius: 8px; margin-top: 10px; padding-top: 10px; }"
+        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; color: #888888; }"
+        "QLineEdit { padding: 8px; border: 1px solid #333333; border-radius: 4px; background-color: #111111; color: #ffffff; }"
+        "QTextEdit { padding: 8px; border: 1px solid #333333; border-radius: 4px; background-color: #111111; color: #ffffff; font-family: monospace; }"
+        "QPushButton { background-color: #222222; color: #ffffff; padding: 10px 20px; border: 1px solid #444444; border-radius: 4px; font-weight: bold; }"
+        "QPushButton:hover { background-color: #333333; border-color: #ffffff; }"
+        "QPushButton:pressed { background-color: #444444; }"
+        "QPushButton:disabled { background-color: #1a1a1a; color: #666666; }"
     );
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
@@ -107,7 +107,7 @@ void VanityAddressDialog::setupUI()
 
     // Title
     QLabel* titleLabel = new QLabel(tr("Generate Vanity Address"));
-    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #FF6B35;");
+    titleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #ffffff;");
     mainLayout->addWidget(titleLabel);
 
     // Description
@@ -120,7 +120,7 @@ void VanityAddressDialog::setupUI()
     QHBoxLayout* inputLayout = new QHBoxLayout(inputGroup);
 
     QLabel* prefixLabel = new QLabel("1");
-    prefixLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #FF6B35;");
+    prefixLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #ffffff;");
 
     prefixEdit = new QLineEdit();
     prefixEdit->setPlaceholderText(tr("Enter desired prefix (e.g., Coral, ABC)"));
@@ -156,8 +156,8 @@ void VanityAddressDialog::setupUI()
     progressBar->setRange(0, 0);  // Indeterminate
     progressBar->setVisible(false);
     progressBar->setStyleSheet(
-        "QProgressBar { border: 1px solid #FF6B35; border-radius: 4px; background-color: #0f3460; }"
-        "QProgressBar::chunk { background-color: #FF6B35; }"
+        "QProgressBar { border: 1px solid #333333; border-radius: 4px; background-color: #111111; }"
+        "QProgressBar::chunk { background-color: #ffffff; }"
     );
     mainLayout->addWidget(progressBar);
 
@@ -261,7 +261,7 @@ void VanityAddressDialog::onFoundAddress(const QString& address, const QString& 
 
     resultEdit->setText(result);
     statusLabel->setText(tr("Found matching address!"));
-    statusLabel->setStyleSheet("color: #28a745; font-weight: bold;");
+    statusLabel->setStyleSheet("color: #ffffff; font-weight: bold;");
     importButton->setEnabled(walletModel != nullptr);
 }
 

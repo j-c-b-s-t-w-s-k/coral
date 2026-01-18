@@ -162,6 +162,27 @@ void WalletFrame::gotoNetworkPage()
         i.value()->gotoNetworkPage();
 }
 
+void WalletFrame::gotoMarketPage()
+{
+    QMap<WalletModel*, WalletView*>::const_iterator i;
+    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+        i.value()->gotoMarketPage();
+}
+
+void WalletFrame::gotoMiningPage()
+{
+    QMap<WalletModel*, WalletView*>::const_iterator i;
+    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+        i.value()->gotoMiningPage();
+}
+
+// void WalletFrame::gotoPokerPage()
+// {
+//     QMap<WalletModel*, WalletView*>::const_iterator i;
+//     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+//         i.value()->gotoPokerPage();
+// }
+
 void WalletFrame::gotoHistoryPage()
 {
     QMap<WalletModel*, WalletView*>::const_iterator i;

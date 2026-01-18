@@ -56,6 +56,8 @@ QT_MOC_CPP = \
   qt/moc_macdockiconhandler.cpp \
   qt/moc_macnotificationhandler.cpp \
   qt/moc_modaloverlay.cpp \
+  qt/moc_marketpage.cpp \
+  qt/moc_miningpage.cpp \
   qt/moc_networkpage.cpp \
   qt/moc_notificator.cpp \
   qt/moc_openuridialog.cpp \
@@ -130,6 +132,8 @@ BITCOIN_QT_H = \
   qt/macdockiconhandler.h \
   qt/macnotificationhandler.h \
   qt/macos_appnap.h \
+  qt/marketpage.h \
+  qt/miningpage.h \
   qt/modaloverlay.h \
   qt/networkpage.h \
   qt/networkstyle.h \
@@ -279,6 +283,8 @@ BITCOIN_QT_WALLET_CPP = \
   qt/transactiontablemodel.cpp \
   qt/transactionview.cpp \
   qt/walletcontroller.cpp \
+  qt/marketpage.cpp \
+  qt/miningpage.cpp \
   qt/networkpage.cpp \
   qt/vanityaddressdialog.cpp \
   qt/walletframe.cpp \

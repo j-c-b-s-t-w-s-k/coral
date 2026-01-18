@@ -55,7 +55,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp,
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion)
 {
     // Genesis message - proof of date and project identity
-    const char* pszTimestamp = "17/Jan/2026 Coral - RandomX + 21e8 micro-PoW";
+    const char* pszTimestamp = "18/Jan/2026 Trump tariffs take effect as thousands rally for Greenland";
 
     return CreateGenesisBlock(pszTimestamp, nTime, nNonce, nBits, nVersion);
 }
@@ -118,17 +118,17 @@ public:
         m_assumed_chain_state_size = 6;
 
         // Genesis block - Fresh chain start
-        // Timestamp: 1737100800 (January 17, 2025 00:00:00 UTC)
+        // Timestamp: 1768694400 (January 18, 2026 00:00:00 UTC)
         // NO OUTPUT - genesis is ceremonial, all coins mined from block 1
-        uint32_t nTime = 1737100800;
-        uint32_t nNonce = 1047283;
+        uint32_t nTime = 1768694400;
+        uint32_t nNonce = 12230;
         uint32_t nBits = 0x1e0fffff;  // Very easy initial difficulty
 
         genesis = CreateGenesisBlock(nTime, nNonce, nBits, 1);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x000008f6fd447935219623f341a3a229226c8b587f970923231ddeacf4dae780"));
-        assert(genesis.hashMerkleRoot == uint256S("0x1b9767c1afba4386a334e0d9cc45bf01c19dd1524be25758d11b12d7ac32d955"));
+        assert(consensus.hashGenesisBlock == uint256S("0x00000be404e6b09de57636dcd4cadf978720286a5c9f474d27d1e546ec629e94"));
+        assert(genesis.hashMerkleRoot == uint256S("0x31f6694421dd96f7c3fc212a6652cb8c5e0f774a925255c99e0b787ba7dac071"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
         // possible options.
@@ -238,11 +238,11 @@ public:
         m_assumed_blockchain_size = 42;
         m_assumed_chain_state_size = 2;
 
-        genesis = CreateGenesisBlock(1737100800, 1047283, 0x1e0fffff, 1);
+        genesis = CreateGenesisBlock(1768694400, 12230, 0x1e0fffff, 1);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x000008f6fd447935219623f341a3a229226c8b587f970923231ddeacf4dae780"));
-        assert(genesis.hashMerkleRoot == uint256S("0x1b9767c1afba4386a334e0d9cc45bf01c19dd1524be25758d11b12d7ac32d955"));
+        assert(consensus.hashGenesisBlock == uint256S("0x00000be404e6b09de57636dcd4cadf978720286a5c9f474d27d1e546ec629e94"));
+        assert(genesis.hashMerkleRoot == uint256S("0x31f6694421dd96f7c3fc212a6652cb8c5e0f774a925255c99e0b787ba7dac071"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -375,11 +375,11 @@ public:
         nDefaultPort = 38334; // Coral signet port
         nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1737100800, 1047283, 0x1e0fffff, 1);
+        genesis = CreateGenesisBlock(1768694400, 12230, 0x1e0fffff, 1);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x000008f6fd447935219623f341a3a229226c8b587f970923231ddeacf4dae780"));
-        assert(genesis.hashMerkleRoot == uint256S("0x1b9767c1afba4386a334e0d9cc45bf01c19dd1524be25758d11b12d7ac32d955"));
+        assert(consensus.hashGenesisBlock == uint256S("0x00000be404e6b09de57636dcd4cadf978720286a5c9f474d27d1e546ec629e94"));
+        assert(genesis.hashMerkleRoot == uint256S("0x31f6694421dd96f7c3fc212a6652cb8c5e0f774a925255c99e0b787ba7dac071"));
 
         vFixedSeeds.clear();
 
@@ -448,7 +448,7 @@ public:
 
         UpdateActivationParametersFromArgs(args);
 
-        genesis = CreateGenesisBlock(1737100800, 0, 0x207fffff, 1);
+        genesis = CreateGenesisBlock(1768694400, 1, 0x207fffff, 1);
         consensus.hashGenesisBlock = genesis.GetHash();
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
@@ -462,7 +462,7 @@ public:
 
         checkpointData = {
             {
-                {0, uint256S("0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206")},
+                {0, uint256S("d01c3ead3e6113ed63633748135b76135e0fd2f69c9b7bf64c07f08ed19c2e17")},
             }
         };
 

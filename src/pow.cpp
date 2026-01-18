@@ -151,12 +151,17 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
     bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
 
     // Check range
-    if (fNegative || bnTarget == 0 || fOverflow || bnTarget > UintToArith256(params.powLimit))
+    if (fNegative || bnTarget == 0 || fOverflow || bnTarget > UintToArith256(params.powLimit)) {
+        LogPrintf("CheckProofOfWork RANGE FAIL: nBits=0x%08x, fNegative=%d, fOverflow=%d, bnTarget=%s, powLimit=%s\n",
+                  nBits, fNegative, fOverflow, bnTarget.GetHex(), params.powLimit.GetHex());
         return false;
+    }
 
     // Check proof of work matches claimed amount
-    if (UintToArith256(hash) > bnTarget)
+    if (UintToArith256(hash) > bnTarget) {
+        LogPrintf("CheckProofOfWork HASH FAIL: hash=%s > target=%s\n", hash.GetHex(), bnTarget.GetHex());
         return false;
+    }
 
     return true;
 }
@@ -264,7 +269,10 @@ bool CheckRandomXProofOfWork(const CBlockHeader& block, unsigned int nBits, cons
     // Genesis block uses SHA256d (hashPrevBlock is null)
     // All subsequent blocks use RandomX
     if (block.hashPrevBlock.IsNull()) {
-        return CheckProofOfWork(block.GetHash(), nBits, params);
+        bool result = CheckProofOfWork(block.GetHash(), nBits, params);
+        LogPrintf("CheckRandomXProofOfWork: Genesis block hash=%s, nBits=0x%08x, result=%d\n",
+                  block.GetHash().ToString(), nBits, result);
+        return result;
     }
 
     // TEMPORARY: Allow SHA256d mining for development/testing

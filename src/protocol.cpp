@@ -44,6 +44,19 @@ const char *CFHEADERS="cfheaders";
 const char *GETCFCHECKPT="getcfcheckpt";
 const char *CFCHECKPT="cfcheckpt";
 const char *WTXIDRELAY="wtxidrelay";
+// Poker protocol messages
+const char *PKRANNOUNCE="pkrannounce";
+const char *PKRJOIN="pkrjoin";
+const char *PKRACCEPT="pkraccept";
+const char *PKRREADY="pkrready";
+const char *PKRSTART="pkrstart";
+const char *PKRKEY="pkrkey";
+const char *PKRDECK="pkrdeck";
+const char *PKRREVEAL="pkrreveal";
+const char *PKRACTION="pkraction";
+const char *PKRSTATE="pkrstate";
+const char *PKRSETTLE="pkrsettle";
+const char *PKRLEAVE="pkrleave";
 } // namespace NetMsgType
 
 /** All known message types. Keep this in the same order as the list of
@@ -84,6 +97,19 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::GETCFCHECKPT,
     NetMsgType::CFCHECKPT,
     NetMsgType::WTXIDRELAY,
+    // Poker protocol
+    NetMsgType::PKRANNOUNCE,
+    NetMsgType::PKRJOIN,
+    NetMsgType::PKRACCEPT,
+    NetMsgType::PKRREADY,
+    NetMsgType::PKRSTART,
+    NetMsgType::PKRKEY,
+    NetMsgType::PKRDECK,
+    NetMsgType::PKRREVEAL,
+    NetMsgType::PKRACTION,
+    NetMsgType::PKRSTATE,
+    NetMsgType::PKRSETTLE,
+    NetMsgType::PKRLEAVE,
 };
 const static std::vector<std::string> allNetMessageTypesVec(std::begin(allNetMessageTypes), std::end(allNetMessageTypes));
 

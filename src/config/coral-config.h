@@ -70,7 +70,7 @@
 #define HAVE_BUILTIN_CLZLL 1
 
 /* Define if you have a working __builtin_mul_overflow */
-#define HAVE_BUILTIN_MUL_OVERFLOW 1
+/* #undef HAVE_BUILTIN_MUL_OVERFLOW */
 
 /* Define to 1 if you have the <byteswap.h> header file. */
 /* #undef HAVE_BYTESWAP_H */

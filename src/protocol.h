@@ -258,6 +258,56 @@ extern const char* CFCHECKPT;
  * @since protocol version 70016 as described by BIP 339.
  */
 extern const char* WTXIDRELAY;
+
+// Poker game protocol messages
+/**
+ * Announce an available poker game to the network.
+ */
+extern const char* PKRANNOUNCE;
+/**
+ * Request to join a poker game.
+ */
+extern const char* PKRJOIN;
+/**
+ * Accept a player's request to join the game.
+ */
+extern const char* PKRACCEPT;
+/**
+ * Player signals ready with escrow transaction.
+ */
+extern const char* PKRREADY;
+/**
+ * Signal to start the game (from host).
+ */
+extern const char* PKRSTART;
+/**
+ * Mental poker key exchange message.
+ */
+extern const char* PKRKEY;
+/**
+ * Encrypted deck share for mental poker protocol.
+ */
+extern const char* PKRDECK;
+/**
+ * Partial card reveal for mental poker protocol.
+ */
+extern const char* PKRREVEAL;
+/**
+ * Player betting action (bet/call/fold/raise/check).
+ */
+extern const char* PKRACTION;
+/**
+ * Game state synchronization message.
+ */
+extern const char* PKRSTATE;
+/**
+ * Settlement transaction signature.
+ */
+extern const char* PKRSETTLE;
+/**
+ * Player leaving the game/table.
+ */
+extern const char* PKRLEAVE;
 }; // namespace NetMsgType
 
 /* Get a vector of all valid message types (see above) */

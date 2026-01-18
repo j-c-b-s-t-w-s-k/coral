@@ -45,18 +45,18 @@ void NetworkPage::setupUI()
 {
     // Dark theme for the entire page
     setStyleSheet(
-        "NetworkPage { background-color: #1a1a2e; }"
-        "QLabel { color: #eaeaea; }"
-        "QGroupBox { color: #eaeaea; background-color: #16213e; }"
+        "NetworkPage { background-color: #000000; }"
+        "QLabel { color: #ffffff; }"
+        "QGroupBox { color: #ffffff; background-color: #111111; }"
     );
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(20, 20, 20, 20);
     mainLayout->setSpacing(20);
 
-    // Title with Coral branding
-    QLabel *titleLabel = new QLabel(tr("Coral Network Dashboard"));
-    titleLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: #FF6B35;");
+    // Title
+    QLabel *titleLabel = new QLabel(tr("Network Dashboard"));
+    titleLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: #ffffff;");
     mainLayout->addWidget(titleLabel);
 
     // Create horizontal layout for top sections
@@ -83,8 +83,8 @@ void NetworkPage::setupNetworkStatsSection()
 {
     networkGroupBox = new QGroupBox(tr("Network Status"));
     networkGroupBox->setStyleSheet(
-        "QGroupBox { font-weight: bold; border: 2px solid #FF6B35; border-radius: 8px; margin-top: 10px; padding-top: 10px; background-color: #16213e; }"
-        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; color: #FF6B35; }"
+        "QGroupBox { font-weight: bold; border: 1px solid #333333; border-radius: 8px; margin-top: 10px; padding-top: 10px; background-color: #111111; }"
+        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; color: #888888; }"
     );
 
     QVBoxLayout *layout = new QVBoxLayout(networkGroupBox);
@@ -117,8 +117,8 @@ void NetworkPage::setupMempoolSection()
 {
     mempoolGroupBox = new QGroupBox(tr("Mempool"));
     mempoolGroupBox->setStyleSheet(
-        "QGroupBox { font-weight: bold; border: 2px solid #FF6B35; border-radius: 8px; margin-top: 10px; padding-top: 10px; background-color: #16213e; }"
-        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; color: #FF6B35; }"
+        "QGroupBox { font-weight: bold; border: 1px solid #333333; border-radius: 8px; margin-top: 10px; padding-top: 10px; background-color: #111111; }"
+        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; color: #888888; }"
     );
 
     QVBoxLayout *layout = new QVBoxLayout(mempoolGroupBox);
@@ -138,8 +138,8 @@ void NetworkPage::setupMempoolSection()
     mempoolUsageBar->setValue(0);
     mempoolUsageBar->setFormat(tr("Memory Usage: %p%"));
     mempoolUsageBar->setStyleSheet(
-        "QProgressBar { border: 1px solid #FF6B35; border-radius: 4px; text-align: center; background-color: #0f3460; color: #eaeaea; }"
-        "QProgressBar::chunk { background-color: #FF6B35; border-radius: 3px; }"
+        "QProgressBar { border: 1px solid #333333; border-radius: 4px; text-align: center; background-color: #111111; color: #ffffff; }"
+        "QProgressBar::chunk { background-color: #ffffff; border-radius: 3px; }"
     );
 
     layout->addWidget(mempoolSizeLabel);
@@ -153,8 +153,8 @@ void NetworkPage::setupPeerSection()
 {
     peerGroupBox = new QGroupBox(tr("Connected Peers"));
     peerGroupBox->setStyleSheet(
-        "QGroupBox { font-weight: bold; border: 2px solid #FF6B35; border-radius: 8px; margin-top: 10px; padding-top: 10px; background-color: #16213e; }"
-        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; color: #FF6B35; }"
+        "QGroupBox { font-weight: bold; border: 1px solid #333333; border-radius: 8px; margin-top: 10px; padding-top: 10px; background-color: #111111; }"
+        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; color: #888888; }"
     );
 
     QVBoxLayout *layout = new QVBoxLayout(peerGroupBox);
@@ -183,13 +183,13 @@ void NetworkPage::setupPeerSection()
 
     addPeerEdit = new QLineEdit();
     addPeerEdit->setPlaceholderText(tr("Enter peer address (e.g., 192.168.1.1:8334)"));
-    addPeerEdit->setStyleSheet("padding: 8px; border: 1px solid #FF6B35; border-radius: 4px; background-color: #0f3460; color: #eaeaea;");
+    addPeerEdit->setStyleSheet("padding: 8px; border: 1px solid #333333; border-radius: 4px; background-color: #111111; color: #ffffff;");
 
     addPeerButton = new QPushButton(tr("Add Peer"));
     addPeerButton->setStyleSheet(
-        "QPushButton { background-color: #FF6B35; color: white; padding: 8px 16px; border: none; border-radius: 4px; }"
-        "QPushButton:hover { background-color: #e55a2b; }"
-        "QPushButton:pressed { background-color: #cc4f26; }"
+        "QPushButton { background-color: #222222; color: #ffffff; padding: 8px 16px; border: 1px solid #444444; border-radius: 4px; }"
+        "QPushButton:hover { background-color: #333333; border-color: #ffffff; }"
+        "QPushButton:pressed { background-color: #444444; }"
     );
     connect(addPeerButton, &QPushButton::clicked, this, &NetworkPage::onAddPeerClicked);
 
@@ -207,11 +207,11 @@ void NetworkPage::setupPeerSection()
     peerTableView->verticalHeader()->hide();
     peerTableView->setShowGrid(false);
     peerTableView->setStyleSheet(
-        "QTableView { border: 1px solid #FF6B35; border-radius: 4px; background-color: #0f3460; color: #eaeaea; }"
+        "QTableView { border: 1px solid #333333; border-radius: 4px; background-color: #111111; color: #ffffff; }"
         "QTableView::item { padding: 8px; }"
-        "QTableView::item:selected { background-color: #FF6B35; color: white; }"
-        "QTableView::item:alternate { background-color: #16213e; }"
-        "QHeaderView::section { background-color: #1a1a2e; padding: 8px; border: none; border-bottom: 1px solid #FF6B35; font-weight: bold; color: #FF6B35; }"
+        "QTableView::item:selected { background-color: #333333; color: #ffffff; }"
+        "QTableView::item:alternate { background-color: #0a0a0a; }"
+        "QHeaderView::section { background-color: #000000; padding: 8px; border: none; border-bottom: 1px solid #333333; font-weight: bold; color: #888888; }"
     );
 
     layout->addWidget(peerTableView, 1);
@@ -249,10 +249,10 @@ void NetworkPage::setClientModel(ClientModel *model)
         connect(clientModel, &ClientModel::networkActiveChanged, this, [this](bool active) {
             if (active) {
                 networkActiveLabel->setText(tr("Status: Online"));
-                networkActiveLabel->setStyleSheet("font-size: 14px; color: #28a745;");
+                networkActiveLabel->setStyleSheet("font-size: 14px; color: #ffffff;");
             } else {
                 networkActiveLabel->setText(tr("Status: Offline"));
-                networkActiveLabel->setStyleSheet("font-size: 14px; color: #dc3545;");
+                networkActiveLabel->setStyleSheet("font-size: 14px; color: #ff4444;");
             }
         });
 
