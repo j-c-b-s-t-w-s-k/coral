@@ -1,159 +1,206 @@
-# 🪸 Coral Cryptocurrency
-**The RandomX CPU Mining Revolution**
+# Coral Cryptocurrency
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
-[![Mining Algorithm](https://img.shields.io/badge/Mining-RandomX-blue.svg)]()
-[![Network](https://img.shields.io/badge/Network-Live-success.svg)]()
+## Abstract
 
----
+Coral is a peer-to-peer electronic cash system derived from the Bitcoin Core reference implementation (version 24.0.1). The primary modification consists of the replacement of the SHA-256d proof-of-work algorithm with RandomX, a memory-hard, CPU-optimized hashing algorithm designed to resist implementation on application-specific integrated circuits (ASICs) and field-programmable gate arrays (FPGAs).
 
-## 🌟 What Makes Coral Unique?
+This document provides comprehensive technical specifications, build instructions, operational parameters, and security considerations for the Coral network.
 
-Coral isn't just another cryptocurrency—it's a **revolutionary approach to fair, democratic mining** that puts power back in the hands of everyday users.
+## Table of Contents
 
-### ⚡ **Extreme Genesis Security**
-- **Astronomical Difficulty**: 21e800 (21 followed by 800 zeros)
-- **Header-Only Genesis**: Completely unspendable genesis block
-- **Embedded Message**: "FUCK SATOSHI! Był głupim snobem" (Polish: "FUCK SATOSHI! He was a foolish snob")
-- **Impossible to Manipulate**: Genesis block requires computational power beyond current technology
+1. [Technical Specifications](#technical-specifications)
+2. [Consensus Parameters](#consensus-parameters)
+3. [Network Configuration](#network-configuration)
+4. [Build Instructions](#build-instructions)
+5. [Runtime Configuration](#runtime-configuration)
+6. [Remote Procedure Call Interface](#remote-procedure-call-interface)
+7. [Security Model](#security-model)
+8. [Cryptographic Verification](#cryptographic-verification)
+9. [License](#license)
 
-### 🎯 **True CPU Democracy**
-- **RandomX Algorithm**: ASIC-resistant, CPU-optimized proof-of-work
-- **Fair Mining**: No ASIC dominance, anyone with a computer can participate
-- **Memory-Hard**: Uses ~2GB RAM per thread, prevents specialized hardware advantage
-- **Global Accessibility**: Mine with your laptop, desktop, or server
+## Technical Specifications
 
-### 🚀 **Enhanced Economics**
-- **Block Time**: 10 minutes (stable and predictable)
-- **Initial Reward**: 100 CORAL per block
-- **Unique Quartering**: Rewards divide by 4 (not 2) every 210,000 blocks
-- **Deflationary**: Maximum supply more limited than Bitcoin
+### Proof-of-Work Algorithm
 
-### 🛡️ **Proven Security Foundation**
-- **Bitcoin Core Base**: Built on the most battle-tested blockchain codebase
-- **Complete Rebrand**: Every "Bitcoin" reference replaced with "Coral"
-- **Modern Features**: Latest security improvements and optimizations
-- **Peer-to-Peer**: Decentralized network with flood protection
+The Coral network employs RandomX version 1.1.9 as its proof-of-work function. RandomX is a proof-of-work algorithm optimized for general-purpose central processing units. The algorithm utilizes random code execution combined with memory-hard techniques to achieve ASIC resistance.
 
----
+RandomX operates in two modes:
 
-## 🚀 Quick Start
+1. **Fast mode**: Requires 2080 megabytes of shared memory for the dataset. Provides optimal hashing performance.
+2. **Light mode**: Requires 256 megabytes of shared memory for the cache. Suitable for verification operations on memory-constrained systems.
 
-### For Windows Users
-See [Build Instructions](doc/build-windows.md) for cross-compiling on Linux, or build natively using MSVC.
+The expected hash rate for contemporary x86-64 processors ranges from 1000 to 10000 hashes per second per thread, depending on cache size, memory bandwidth, and instruction set extensions (AES-NI, AVX2).
 
-### For Linux/macOS Users
+### Block Structure
+
+Each block in the Coral blockchain consists of the following components:
+
+| Field | Size (bytes) | Description |
+|-------|--------------|-------------|
+| nVersion | 4 | Block version number |
+| hashPrevBlock | 32 | SHA-256d hash of the previous block header |
+| hashMerkleRoot | 32 | SHA-256d Merkle root of all transactions |
+| nTime | 4 | Unix timestamp (seconds since 1970-01-01T00:00:00Z) |
+| nBits | 4 | Compact representation of the target threshold |
+| nNonce | 4 | 32-bit nonce for proof-of-work iteration |
+
+Total header size: 80 bytes.
+
+### Genesis Block
+
+The genesis block was mined on 2026-01-18T00:00:00Z with the following parameters:
+
+```
+Timestamp message: "18/Jan/2026 Trump tariffs take effect as thousands rally for Greenland"
+Unix timestamp: 1768694400
+nBits: 0x1e0fffff
+nNonce: 12230
+Block hash: 00000be404e6b09de57636dcd4cadf978720286a5c9f474d27d1e546ec629e94
+Merkle root: 31f6694421dd96f7c3fc212a6652cb8c5e0f774a925255c99e0b787ba7dac071
+```
+
+The genesis block coinbase transaction contains an OP_RETURN output rendering the output unspendable. All circulating supply originates from block subsidies beginning at block height 1.
+
+## Consensus Parameters
+
+### Mainnet Parameters
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| Block interval target | 600 seconds | Average time between blocks |
+| Difficulty adjustment interval | 2016 blocks | Blocks between difficulty recalculations |
+| Difficulty adjustment timespan | 1209600 seconds | Target time for 2016 blocks (14 days) |
+| Initial block subsidy | 50 CRL | Coinbase reward for blocks 1-209999 |
+| Subsidy halving interval | 210000 blocks | Blocks between subsidy reductions |
+| Maximum supply | 21000000 CRL | Theoretical maximum (asymptotically approached) |
+| Minimum difficulty | 0x1e0fffff | Compact target for minimum difficulty |
+| powLimit | 00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff | Maximum target value |
+
+### Address Encoding
+
+| Type | Version Byte | Prefix | Example |
+|------|--------------|--------|---------|
+| P2PKH | 0x00 | 1 | 1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2 |
+| P2SH | 0x05 | 3 | 3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy |
+| Bech32 | coral | coral1 | coral1qw508d6qejxtdg4y5r3zarvary0c5xw7k... |
+| Bech32m | coral | coral1 | coral1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z... |
+
+### Network Ports
+
+| Network | P2P Port | RPC Port |
+|---------|----------|----------|
+| Mainnet | 8334 | 8335 |
+| Testnet | 18334 | 18335 |
+| Regtest | 18444 | 18445 |
+
+## Network Configuration
+
+### Peer-to-Peer Protocol
+
+The Coral network utilizes the Bitcoin peer-to-peer protocol with the following version parameters:
+
+- Protocol version: 70016
+- User agent: /Coral:24.0.1/
+- Services: NODE_NETWORK, NODE_WITNESS, NODE_NETWORK_LIMITED
+
+### Message Types
+
+Standard Bitcoin protocol messages are supported. Additional message types for future functionality are reserved in the protocol namespace.
+
+## Build Instructions
+
+### Prerequisites
+
+The following dependencies are required for compilation:
+
+| Dependency | Minimum Version | Purpose |
+|------------|-----------------|---------|
+| GCC or Clang | 7.0 / 5.0 | C++17 compiler |
+| GNU Autotools | 2.69 | Build system |
+| pkg-config | 0.29 | Dependency resolution |
+| Boost | 1.64.0 | C++ libraries |
+| libevent | 2.1.8 | Asynchronous I/O |
+| OpenSSL | 1.1.0 | Cryptographic primitives |
+| Berkeley DB | 4.8.30 | Wallet database (optional) |
+| Qt | 5.11.3 | Graphical interface (optional) |
+| RandomX | 1.1.9 | Proof-of-work algorithm |
+
+### Linux (Debian/Ubuntu)
+
 ```bash
+# Install build dependencies
+sudo apt-get update
+sudo apt-get install -y \
+    build-essential \
+    libtool \
+    autotools-dev \
+    automake \
+    pkg-config \
+    bsdmainutils \
+    python3 \
+    libssl-dev \
+    libevent-dev \
+    libboost-system-dev \
+    libboost-filesystem-dev \
+    libboost-test-dev \
+    libboost-thread-dev \
+    libdb-dev \
+    libdb++-dev \
+    libsqlite3-dev \
+    libminiupnpc-dev \
+    libnatpmp-dev \
+    libzmq3-dev \
+    qtbase5-dev \
+    qttools5-dev \
+    qttools5-dev-tools \
+    libqrencode-dev
+
 # Clone repository
 git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
 cd coral
 
-# Install dependencies (Ubuntu/Debian)
-sudo apt update && sudo apt install -y build-essential libtool autotools-dev \
-automake pkg-config bsdmainutils python3 libssl-dev libevent-dev \
-libboost-system-dev libboost-filesystem-dev libboost-test-dev \
-libboost-thread-dev libdb-dev libdb++-dev git
+# Build RandomX from source
+git clone https://github.com/tevador/RandomX.git
+cd RandomX
+mkdir build && cd build
+cmake -DARCH=native ..
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+cd ../..
 
-# Build Coral
+# Configure and build Coral
 ./autogen.sh
-./configure
+./configure \
+    --with-gui=qt5 \
+    --enable-hardening \
+    --with-incompatible-bdb
 make -j$(nproc)
 
-# Start mining
-./src/corald &
-./src/coral-cli generate 1 $(./src/coral-cli getnewaddress)
+# Optional: Install system-wide
+sudo make install
 ```
 
----
+### macOS (Intel x86_64)
 
-## 📊 Mining Performance Guide
-
-| CPU Type | Expected Hash Rate | Power Usage | Profitability |
-|----------|-------------------|-------------|---------------|
-| 4-core Laptop | 500-2000 H/s | 45-65W | ⭐⭐⭐ |
-| 8-core Desktop | 1500-4000 H/s | 95-150W | ⭐⭐⭐⭐ |
-| 16-core Workstation | 3000-8000 H/s | 180-300W | ⭐⭐⭐⭐⭐ |
-| 32+ core Server | 8000+ H/s | 400W+ | ⭐⭐⭐⭐⭐ |
-
-### 🎯 **Optimization Tips**
-- **Use N-1 cores** (leave 1-2 cores for system operations)
-- **Ensure 8GB+ RAM** (RandomX is memory-intensive)
-- **Monitor temperatures** (mining generates heat)
-- **Stable internet connection** for consistent mining
-- **SSD storage** for faster blockchain sync
-
----
-
-## 🏗️ **Network Specifications**
-
-| Parameter | Value | Description |
-|-----------|--------|-------------|
-| **Algorithm** | RandomX | CPU-optimized, ASIC-resistant |
-| **Block Time** | 10 minutes | Consistent, predictable blocks |
-| **Block Reward** | 100 CORAL | High initial rewards |
-| **Halving** | Quartering every 210k blocks | More deflationary than Bitcoin |
-| **Port** | 8334 | Mainnet connection port |
-| **Address Prefix** | '1' (P2PKH), 'c' (P2SH) | Coral-specific addressing |
-| **Bech32 HRP** | coral | Modern address format |
-
----
-
-## 🛠️ **Building from Source**
-
-### Prerequisites
-- **C++ Compiler**: GCC 7+ or Clang 5+
-- **Build Tools**: autotools, pkg-config
-- **Libraries**: OpenSSL, libevent, Boost 1.64+
-- **Database**: Berkeley DB 4.8 (for wallet)
-- **RandomX**: Included and automatically built
-
-### Build Instructions
-
-#### Linux (Ubuntu/Debian)
 ```bash
-sudo apt update && sudo apt install -y \
-    build-essential libtool autotools-dev automake pkg-config \
-    bsdmainutils python3 libssl-dev libevent-dev libboost-system-dev \
-    libboost-filesystem-dev libboost-test-dev libboost-thread-dev \
-    libdb-dev libdb++-dev git
-
-git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
-cd coral
-./autogen.sh
-./configure
-make -j$(nproc)
-```
-
-#### macOS (Intel x86_64)
-```bash
-# Install Homebrew if not already installed
+# Install Homebrew package manager
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 # Install dependencies
-brew install automake libtool boost miniupnpc openssl pkg-config python qt libevent qrencode
+brew install \
+    automake \
+    libtool \
+    boost \
+    pkg-config \
+    libevent \
+    qt@5 \
+    qrencode \
+    miniupnpc \
+    zeromq \
+    berkeley-db@4
 
-# Build Coral
-git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
-cd coral
-./autogen.sh
-./configure --with-gui=qt5
-make -j$(sysctl -n hw.physicalcpu)
-```
-
-#### macOS (Apple Silicon M1/M2/M3/M4)
-```bash
-# Install Homebrew (ARM version at /opt/homebrew)
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# Add Homebrew to PATH (if not already done)
-echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-eval "$(/opt/homebrew/bin/brew shellenv)"
-
-# Install dependencies
-brew install automake libtool boost pkg-config libevent qt@5 qrencode miniupnpc zeromq berkeley-db@4
-
-# Build RandomX from source (ensures ARM64 native build)
+# Clone and build RandomX
 git clone https://github.com/tevador/RandomX.git
 cd RandomX
 mkdir build && cd build
@@ -166,287 +213,345 @@ cd ../..
 git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
 cd coral
 ./autogen.sh
+./configure --with-gui=qt5
+make -j$(sysctl -n hw.ncpu)
+```
 
-# Configure with proper paths for Apple Silicon Homebrew
-./configure --with-gui=qt5 \
+### macOS (Apple Silicon ARM64)
+
+```bash
+# Install Homebrew package manager (ARM64 version)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Configure shell environment for Homebrew
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Install dependencies
+brew install \
+    automake \
+    libtool \
+    boost \
+    pkg-config \
+    libevent \
+    qt@5 \
+    qrencode \
+    miniupnpc \
+    zeromq \
+    berkeley-db@4
+
+# Clone and build RandomX with ARM64 optimizations
+git clone https://github.com/tevador/RandomX.git
+cd RandomX
+mkdir build && cd build
+cmake -DARCH=native ..
+make -j$(sysctl -n hw.ncpu)
+sudo make install
+cd ../..
+
+# Clone and build Coral
+git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
+cd coral
+./autogen.sh
+./configure \
+    --with-gui=qt5 \
     CPPFLAGS="-I/opt/homebrew/include" \
     LDFLAGS="-L/opt/homebrew/lib -L/usr/local/lib" \
     PKG_CONFIG_PATH="/opt/homebrew/opt/qt@5/lib/pkgconfig:/opt/homebrew/lib/pkgconfig"
-
-# Build using all cores
 make -j$(sysctl -n hw.ncpu)
-
-# Run the Qt client
-./src/qt/bitcoin-qt
 ```
 
-**Apple Silicon Notes:**
-- Native ARM64 builds are significantly faster than Rosetta 2 emulation
-- RandomX performs well on M-series chips (~2-4 KH/s per efficiency core, ~4-8 KH/s per performance core)
-- M4 Mac Mini should achieve ~15-25 KH/s total hashrate
-- Ensure you have at least 8GB RAM (16GB recommended for mining)
+Expected hash rates for Apple Silicon processors:
 
-#### Windows (Cross-Compilation)
+| Processor | Approximate Hash Rate |
+|-----------|----------------------|
+| M1 | 8000-12000 H/s |
+| M1 Pro/Max | 12000-20000 H/s |
+| M2 | 10000-15000 H/s |
+| M2 Pro/Max | 15000-25000 H/s |
+| M3 | 12000-18000 H/s |
+| M3 Pro/Max | 18000-30000 H/s |
+| M4 | 15000-25000 H/s |
+
+### Windows (Cross-compilation from Linux)
+
 ```bash
-# On Ubuntu/Debian
-sudo apt install -y g++-mingw-w64-x86-64 mingw-w64-x86-64-dev wine64
+# Install cross-compilation toolchain
+sudo apt-get install -y \
+    g++-mingw-w64-x86-64 \
+    mingw-w64-x86-64-dev
 
-# Build
-git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
-cd coral
-./contrib/coral/windows/build.sh
-```
+# Build dependencies using depends system
+cd coral/depends
+make HOST=x86_64-w64-mingw32 -j$(nproc)
+cd ..
 
----
-
-## 🖥️ **Qt GUI Client (coral-qt)**
-
-The Qt GUI provides a full graphical wallet interface with network monitoring, transaction history, and mining controls.
-
-### Building the Qt Client
-
-#### Linux (Ubuntu/Debian)
-```bash
-# Install Qt5 dependencies (in addition to base dependencies above)
-sudo apt install -y qtbase5-dev qttools5-dev qttools5-dev-tools libqrencode-dev
-
-# Clone and build with GUI
-git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
-cd coral
+# Configure and build
 ./autogen.sh
-./configure --with-gui=qt5
+CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/
 make -j$(nproc)
-
-# Run the Qt client
-./src/qt/coral-qt
 ```
 
-#### macOS
-```bash
-# Install dependencies including Qt
-brew install automake libtool boost pkg-config libevent qt@5 qrencode berkeley-db@4
+### Build Verification
 
-# Clone and build
-git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
-cd coral
-./autogen.sh
-./configure --with-gui=qt5
-make -j$(sysctl -n hw.physicalcpu)
-
-# Run the Qt client
-./src/qt/coral-qt
-
-# Optional: Create a .dmg installer
-pip3 install ds_store mac_alias
-make deploy
-```
-
-### Qt Client Features
-- **Wallet Management**: Send, receive, and manage CORAL transactions
-- **Mining Controls**: Start/stop mining directly from the GUI
-- **Network Status**: Real-time peer connections and sync status
-- **Address Book**: Organize and label your addresses
-- **Transaction History**: Complete history with search and filtering
-- **QR Code Support**: Generate QR codes for receiving addresses
-- **Dark Theme**: Modern dark UI theme included
-
-### Running the Qt Client
+After successful compilation, verify the build:
 
 ```bash
-# Start with default settings (connects to mainnet)
-./src/qt/coral-qt
+# Check binary existence and architecture
+file src/corald
+file src/coral-cli
+file src/qt/bitcoin-qt
 
-# Start on testnet
-./src/qt/coral-qt -testnet
+# Verify version
+./src/corald --version
+./src/coral-cli --version
 
-# Start on regtest (for development)
-./src/qt/coral-qt -regtest
+# Run unit tests
+make check
 
-# Start with specific data directory
-./src/qt/coral-qt -datadir=/path/to/data
+# Run functional tests (requires Python 3)
+test/functional/test_runner.py --extended
 ```
 
----
+## Runtime Configuration
 
-## 📖 **Documentation**
+### Configuration File
 
-### For Beginners
-- **[Complete Noob's Guide](doc/coral/GETTING_STARTED.md)** - Step-by-step setup instructions
-- **[Download Instructions](doc/coral/DOWNLOAD.md)** - How to obtain Coral
+The configuration file is located at:
 
-### For Advanced Users
-- **[Build Instructions](doc/build-unix.md)** - Detailed compilation guide
-- **[Network Launch Guide](doc/coral/coral-launch.md)** - Technical network details
-- **[Testing Guide](doc/coral/CORAL_TESTING.md)** - Testing procedures
+- Linux: `~/.coral/coral.conf`
+- macOS: `~/Library/Application Support/Coral/coral.conf`
+- Windows: `%APPDATA%\Coral\coral.conf`
 
-### For Developers
-- **[Developer Notes](doc/developer-notes.md)** - Code contribution guidelines
-- **[API Documentation](doc/)** - RPC interface details
-- **[Architecture](doc/)** - Technical architecture overview
+Example configuration:
 
----
+```ini
+# Network
+listen=1
+port=8334
+maxconnections=125
 
-## 🌍 **Why Coral Matters**
+# RPC Server
+server=1
+rpcuser=<username>
+rpcpassword=<password>
+rpcport=8335
+rpcallowip=127.0.0.1
+rpcbind=127.0.0.1
 
-### **Democratic Mining**
-Unlike Bitcoin, where ASIC farms dominate, Coral's RandomX algorithm ensures anyone with a CPU can compete fairly. This creates true decentralization and prevents mining monopolies.
+# Mining
+gen=0
 
-### **Environmental Responsibility**
-CPU mining is significantly more energy-efficient than ASIC mining. Coral promotes sustainable cryptocurrency that doesn't require massive power consumption or specialized hardware waste.
+# Wallet
+disablewallet=0
+keypool=1000
 
-### **Financial Accessibility**
-No need for expensive mining equipment. Your existing computer can start earning Coral immediately, making cryptocurrency accessible to everyone globally.
+# Logging
+debug=0
+printtoconsole=0
+logips=0
+logtimestamps=1
 
-### **Technical Innovation**
-- **Memory-hard algorithm** prevents ASIC development
-- **Extreme genesis security** prevents network manipulation
-- **Proven codebase** built on Bitcoin Core's foundation
-- **Modern optimizations** for better performance
+# Performance
+dbcache=450
+maxmempool=300
+maxorphantx=100
+```
 
----
+### Command-line Options
 
-## 🚨 **Security & Risks**
+| Option | Description |
+|--------|-------------|
+| `-conf=<file>` | Specify configuration file path |
+| `-datadir=<dir>` | Specify data directory path |
+| `-daemon` | Run in background as daemon |
+| `-server` | Accept RPC commands |
+| `-testnet` | Use testnet chain |
+| `-regtest` | Use regression test chain |
+| `-printtoconsole` | Send trace/debug output to console |
+| `-debug=<category>` | Enable debug logging for category |
 
-### **What We've Done**
-- ✅ Built on Bitcoin Core's battle-tested foundation
-- ✅ Comprehensive security auditing of changes
-- ✅ RandomX algorithm prevents ASIC attacks
-- ✅ Extreme genesis difficulty prevents manipulation
-- ✅ Complete code review and testing
+## Remote Procedure Call Interface
 
-### **Your Responsibilities**
-- 🔐 **Backup your wallet** regularly and securely
-- 🗝️ **Never share private keys** with anyone
-- 🛡️ **Use strong passwords** for wallet encryption
-- ⚠️ **Understand the risks** - this is experimental software
-- 💰 **Only invest what you can afford to lose**
+### Authentication
 
----
+RPC authentication uses HTTP Basic authentication. Credentials are specified in the configuration file or via command-line arguments.
 
-## 🤝 **Contributing**
+### Mining Commands
 
-We welcome contributions from developers, miners, and enthusiasts!
+| Command | Parameters | Description |
+|---------|------------|-------------|
+| `getmininginfo` | none | Returns mining-related information |
+| `getblocktemplate` | template_request | Returns block template for mining |
+| `submitblock` | hexdata | Submits a mined block |
+| `generatetoaddress` | nblocks, address, [maxtries] | Mine blocks to specified address |
 
-### **How to Contribute**
-1. **Fork** this repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
+Example usage:
 
-### **Areas We Need Help With**
-- 🎨 **GUI Wallet Development** (Qt interface improvements)
-- 🌐 **Mining Pool Software** (Stratum implementation)
-- 📱 **Mobile Wallets** (iOS/Android applications)
-- 🔍 **Block Explorer** (Web-based blockchain explorer)
-- 📊 **Mining Software** (Optimized RandomX miners)
-- 🌍 **Translations** (Multiple language support)
+```bash
+# Generate 10 blocks to address
+coral-cli generatetoaddress 10 "coral1qw508d6qejxtdg4y5r3zarvary0c5xw7k..." 10000000
 
-### **Development Guidelines**
-- Follow existing code style and conventions
-- Write comprehensive tests for new features
-- Update documentation for any changes
-- Ensure all tests pass before submitting PRs
-- Be respectful and constructive in discussions
+# Get current mining information
+coral-cli getmininginfo
 
----
+# Get block template for external miner
+coral-cli getblocktemplate '{"rules": ["segwit"]}'
+```
 
-## 📈 **Roadmap**
+### Wallet Commands
 
-### **Phase 1: Network Launch** ✅
-- [x] Genesis block with extreme difficulty
-- [x] RandomX integration and testing
-- [x] Complete Bitcoin → Coral rebrand
-- [x] Windows executable and installer
-- [x] Basic mining functionality
+| Command | Parameters | Description |
+|---------|------------|-------------|
+| `getnewaddress` | [label], [address_type] | Generate new receiving address |
+| `getbalance` | [dummy], [minconf], [include_watchonly] | Returns total balance |
+| `sendtoaddress` | address, amount, [comment], [comment_to], [subtractfeefromamount] | Send to address |
+| `listunspent` | [minconf], [maxconf], [addresses] | List unspent transaction outputs |
 
-### **Phase 2: Ecosystem Development** 🔄
-- [ ] GUI wallet improvements (Qt interface)
-- [ ] Mining pool reference implementation
-- [ ] Web-based block explorer
-- [ ] Exchange integration support
-- [ ] Mobile wallet prototypes
+### Blockchain Commands
 
-### **Phase 3: Advanced Features** ⏳
-- [ ] Lightning Network support
-- [ ] Multi-signature wallet features
-- [ ] Hardware wallet integration
-- [ ] Advanced privacy features
-- [ ] Smart contract exploration
+| Command | Parameters | Description |
+|---------|------------|-------------|
+| `getblockchaininfo` | none | Returns blockchain state information |
+| `getblock` | blockhash, [verbosity] | Returns block data |
+| `getblockhash` | height | Returns hash of block at height |
+| `getblockcount` | none | Returns current block height |
+| `getdifficulty` | none | Returns current difficulty |
 
-### **Phase 4: Mass Adoption** 🎯
-- [ ] Merchant integration tools
-- [ ] Payment processing solutions
-- [ ] Enterprise mining solutions
-- [ ] Educational resources and tutorials
-- [ ] Partnership development
+## Security Model
 
----
+### Threat Model
 
-## 🌐 **Community**
+The Coral network security model is predicated on the assumption that a majority of computational power is controlled by honest participants. The RandomX proof-of-work algorithm provides additional resistance against centralization of mining power by requiring general-purpose hardware.
 
-### **Get Involved**
-- **GitHub**: [Issues and Development](https://github.com/j-c-b-s-t-w-s-k/coral/issues)
-- **Mining**: Join the network and start earning CORAL
-- **Support**: Help other users in GitHub Discussions
-- **Development**: Contribute code, documentation, or ideas
+### Known Limitations
 
-### **Stay Updated**
-- ⭐ **Star this repository** for updates
-- 👁️ **Watch** for release notifications
-- 🍴 **Fork** to contribute or customize
-- 📢 **Share** with other crypto enthusiasts
+1. **51% Attack**: An adversary controlling majority hash power can reorganize the blockchain, enabling double-spend attacks.
 
----
+2. **Eclipse Attack**: An adversary controlling all peer connections to a node can present a false view of the blockchain.
 
-## ⚖️ **License**
+3. **Selfish Mining**: Strategic block withholding can provide disproportionate rewards under certain conditions.
 
-Coral is released under the **MIT License** - see [COPYING](COPYING) for details.
+### Security Recommendations
 
-This means you can:
-- ✅ Use Coral for any purpose (commercial or personal)
-- ✅ Modify the source code as needed
-- ✅ Distribute copies of Coral
-- ✅ Include Coral in proprietary software
+1. Wait for sufficient confirmations before considering transactions final (6 confirmations recommended for high-value transactions).
 
-With the requirement to:
-- 📄 Include the original license and copyright notice
+2. Connect to diverse, geographically distributed peers.
 
----
+3. Run a full validating node rather than relying on third-party services.
 
-## 🏆 **Achievements**
+4. Encrypt wallet files and maintain secure backups.
 
-- 🥇 **First cryptocurrency with 21e800 genesis difficulty**
-- 🥇 **Most ASIC-resistant mining algorithm implementation**
-- 🥇 **Complete successful Bitcoin → Coral rebrand**
-- 🥇 **Cross-platform Windows executable generation**
-- 🥇 **Comprehensive noob-friendly documentation**
+5. Use hardware security modules for high-value key storage.
 
----
+## Cryptographic Verification
 
-## 📞 **Support**
+### Maintainer PGP Public Key
 
-Need help? We're here for you:
+The following PGP public key may be used to verify signed releases and communications:
 
-- 📋 **Technical Issues**: [GitHub Issues](https://github.com/j-c-b-s-t-w-s-k/coral/issues)
-- 📖 **Documentation**: Check our comprehensive guides
-- 💬 **Community Support**: GitHub Discussions
-- 🔧 **Build Problems**: See platform-specific build guides
+```
+Key ID: 9B9636E35894376AA4717AE8357E56FF61F8330A
+User ID: jcb stwsk <j_stwsk@proton.me>
+Key Type: RSA 3072-bit
+Created: 2026-01-18
+Expires: 2028-01-18
+```
 
-**Remember**: Coral is experimental software. Always do your own research and never invest more than you can afford to lose.
+```
+-----BEGIN PGP PUBLIC KEY BLOCK-----
 
----
+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
+vsHgWQotXCru4YKUhkFmNKGwzg2d
+=WxWj
+-----END PGP PUBLIC KEY BLOCK-----
+```
 
-<div align="center">
+### Verifying Signatures
 
-**🪸 Welcome to the Coral Revolution! 🪸**
+To verify a signed file:
 
-*Fair Mining • CPU Democracy • Financial Freedom*
+```bash
+# Import the public key
+gpg --import maintainer-key.asc
 
-**[📖 Read Full Guide](doc/coral/GETTING_STARTED.md) | [🔧 Build from Source](#building-from-source)**
+# Verify signature
+gpg --verify file.sig file
 
-</div>
+# Verify with specific key
+gpg --verify --keyid-format long file.sig file
+```
 
----
+## License
 
-*Coral Cryptocurrency - Democratizing mining, one CPU at a time.*
+Coral is released under the MIT License.
+
+```
+Copyright (c) 2009-2024 The Bitcoin Core developers
+Copyright (c) 2024-2026 The Coral Core developers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
+
+## References
+
+1. Nakamoto, S. (2008). Bitcoin: A Peer-to-Peer Electronic Cash System.
+2. Tevador et al. (2019). RandomX: ASIC-resistant proof-of-work algorithm.
+3. Bitcoin Core Documentation. https://bitcoincore.org/en/doc/
+4. BIP Repository. https://github.com/bitcoin/bips
+
+## Contact
+
+Maintainer: jcb stwsk <j_stwsk@proton.me>
+Repository: https://github.com/j-c-b-s-t-w-s-k/coral
