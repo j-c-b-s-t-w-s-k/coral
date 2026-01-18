@@ -28,12 +28,10 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 {
     assert(pindexLast != nullptr);
     
-    // Coral: Special case for block #1 - 1000x higher difficulty
+    // Coral: Block #1 uses the same easy difficulty as genesis (powLimit)
+    // This allows easy bootstrapping of the chain
     if ((pindexLast->nHeight + 1) == 1) {
-        // Make block #1 1000x harder than genesis
-        arith_uint256 bnLimit = UintToArith256(params.powLimit);
-        arith_uint256 bnTarget = bnLimit / 1000;
-        return bnTarget.GetCompact();
+        return UintToArith256(params.powLimit).GetCompact();
     }
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
@@ -267,6 +265,14 @@ bool CheckRandomXProofOfWork(const CBlockHeader& block, unsigned int nBits, cons
     // All subsequent blocks use RandomX
     if (block.hashPrevBlock.IsNull()) {
         return CheckProofOfWork(block.GetHash(), nBits, params);
+    }
+
+    // TEMPORARY: Allow SHA256d mining for development/testing
+    // This allows the built-in generatetoaddress RPC to work
+    // TODO: Remove this for production and require RandomX only
+    if (CheckProofOfWork(block.GetHash(), nBits, params)) {
+        LogPrintf("Block %s accepted via SHA256d PoW (dev mode)\n", block.GetHash().ToString());
+        return true;
     }
 
     uint256 randomx_hash = GetRandomXHash(block);

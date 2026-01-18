@@ -18,6 +18,7 @@
 #include <qt/platformstyle.h>
 #include <qt/rpcconsole.h>
 #include <qt/utilitydialog.h>
+#include <qt/vanityaddressdialog.h>
 
 #ifdef ENABLE_WALLET
 #include <qt/walletcontroller.h>
@@ -278,6 +279,13 @@ void CoralGUI::createActions()
     historyAction->setShortcut(QKeySequence(QStringLiteral("Alt+4")));
     tabGroup->addAction(historyAction);
 
+    networkAction = new QAction(platformStyle->SingleColorIcon(":/icons/connect_4"), tr("&Network"), this);
+    networkAction->setStatusTip(tr("View peer connections and mempool"));
+    networkAction->setToolTip(networkAction->statusTip());
+    networkAction->setCheckable(true);
+    networkAction->setShortcut(QKeySequence(QStringLiteral("Alt+5")));
+    tabGroup->addAction(networkAction);
+
 #ifdef ENABLE_WALLET
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
     // can be triggered from the tray menu, and need to show the GUI to be useful.
@@ -289,6 +297,8 @@ void CoralGUI::createActions()
     connect(receiveCoinsAction, &QAction::triggered, this, &CoralGUI::gotoReceiveCoinsPage);
     connect(historyAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
     connect(historyAction, &QAction::triggered, this, &CoralGUI::gotoHistoryPage);
+    connect(networkAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
+    connect(networkAction, &QAction::triggered, this, &CoralGUI::gotoNetworkPage);
 #endif // ENABLE_WALLET
 
     quitAction = new QAction(tr("E&xit"), this);
@@ -318,6 +328,8 @@ void CoralGUI::createActions()
     signMessageAction->setStatusTip(tr("Sign messages with your Coral addresses to prove you own them"));
     verifyMessageAction = new QAction(tr("&Verify message…"), this);
     verifyMessageAction->setStatusTip(tr("Verify messages to ensure they were signed with specified Coral addresses"));
+    vanityAddressAction = new QAction(tr("&Vanity Address Generator…"), this);
+    vanityAddressAction->setStatusTip(tr("Generate custom addresses starting with your chosen prefix"));
     m_load_psbt_action = new QAction(tr("&Load PSBT from file…"), this);
     m_load_psbt_action->setStatusTip(tr("Load Partially Signed Coral Transaction"));
     m_load_psbt_clipboard_action = new QAction(tr("Load PSBT from &clipboard…"), this);
@@ -388,6 +400,7 @@ void CoralGUI::createActions()
         connect(m_load_psbt_clipboard_action, &QAction::triggered, [this]{ gotoLoadPSBT(true); });
         connect(verifyMessageAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
         connect(verifyMessageAction, &QAction::triggered, [this]{ gotoVerifyMessageTab(); });
+        connect(vanityAddressAction, &QAction::triggered, [this]{ showVanityAddressDialog(); });
         connect(usedSendingAddressesAction, &QAction::triggered, walletFrame, &WalletFrame::usedSendingAddresses);
         connect(usedReceivingAddressesAction, &QAction::triggered, walletFrame, &WalletFrame::usedReceivingAddresses);
         connect(openAction, &QAction::triggered, this, &CoralGUI::openClicked);
@@ -488,6 +501,7 @@ void CoralGUI::createMenuBar()
         file->addAction(openAction);
         file->addAction(signMessageAction);
         file->addAction(verifyMessageAction);
+        file->addAction(vanityAddressAction);
         file->addAction(m_load_psbt_action);
         file->addAction(m_load_psbt_clipboard_action);
         file->addSeparator();
@@ -574,6 +588,7 @@ void CoralGUI::createToolBars()
         toolbar->addAction(sendCoinsAction);
         toolbar->addAction(receiveCoinsAction);
         toolbar->addAction(historyAction);
+        toolbar->addAction(networkAction);
         overviewAction->setChecked(true);
 
 #ifdef ENABLE_WALLET
@@ -926,6 +941,12 @@ void CoralGUI::gotoOverviewPage()
     if (walletFrame) walletFrame->gotoOverviewPage();
 }
 
+void CoralGUI::gotoNetworkPage()
+{
+    networkAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoNetworkPage();
+}
+
 void CoralGUI::gotoHistoryPage()
 {
     historyAction->setChecked(true);
@@ -953,6 +974,17 @@ void CoralGUI::gotoVerifyMessageTab(QString addr)
 {
     if (walletFrame) walletFrame->gotoVerifyMessageTab(addr);
 }
+
+void CoralGUI::showVanityAddressDialog()
+{
+    VanityAddressDialog* dlg = new VanityAddressDialog(platformStyle, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    if (walletFrame && walletFrame->currentWalletModel()) {
+        dlg->setModel(walletFrame->currentWalletModel());
+    }
+    dlg->show();
+}
+
 void CoralGUI::gotoLoadPSBT(bool from_clipboard)
 {
     if (walletFrame) walletFrame->gotoLoadPSBT(from_clipboard);

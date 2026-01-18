@@ -46,7 +46,7 @@ See [Build Instructions](doc/build-windows.md) for cross-compiling on Linux, or 
 ### For Linux/macOS Users
 ```bash
 # Clone repository
-git clone https://github.com/nozmo-king/coral.git
+git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
 cd coral
 
 # Install dependencies (Ubuntu/Debian)
@@ -118,7 +118,7 @@ sudo apt update && sudo apt install -y \
     libboost-filesystem-dev libboost-test-dev libboost-thread-dev \
     libdb-dev libdb++-dev git
 
-git clone https://github.com/nozmo-king/coral.git
+git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
 cd coral
 ./autogen.sh
 ./configure
@@ -134,7 +134,7 @@ make -j$(nproc)
 brew install automake libtool boost miniupnpc openssl pkg-config python qt libevent qrencode
 
 # Build Coral
-git clone https://github.com/nozmo-king/coral.git
+git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
 cd coral
 ./autogen.sh
 ./configure --with-gui=qt5
@@ -147,7 +147,7 @@ make -j$(sysctl -n hw.physicalcpu)
 sudo apt install -y g++-mingw-w64-x86-64 mingw-w64-x86-64-dev wine64
 
 # Build
-git clone https://github.com/nozmo-king/coral.git
+git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
 cd coral
 ./contrib/coral/windows/build.sh
 ```
@@ -272,7 +272,7 @@ We welcome contributions from developers, miners, and enthusiasts!
 ## 🌐 **Community**
 
 ### **Get Involved**
-- **GitHub**: [Issues and Development](https://github.com/nozmo-king/coral/issues)
+- **GitHub**: [Issues and Development](https://github.com/j-c-b-s-t-w-s-k/coral/issues)
 - **Mining**: Join the network and start earning CORAL
 - **Support**: Help other users in GitHub Discussions
 - **Development**: Contribute code, documentation, or ideas
@@ -314,7 +314,7 @@ With the requirement to:
 
 Need help? We're here for you:
 
-- 📋 **Technical Issues**: [GitHub Issues](https://github.com/nozmo-king/coral/issues)
+- 📋 **Technical Issues**: [GitHub Issues](https://github.com/j-c-b-s-t-w-s-k/coral/issues)
 - 📖 **Documentation**: Check our comprehensive guides
 - 💬 **Community Support**: GitHub Discussions
 - 🔧 **Build Problems**: See platform-specific build guides

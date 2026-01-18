@@ -1473,20 +1473,26 @@ PackageMempoolAcceptResult ProcessNewPackage(Chainstate& active_chainstate, CTxM
 
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
-    int quarterings = nHeight / consensusParams.nSubsidyHalvingInterval;
-    // Force block reward to zero when right shift is undefined.
-    if (quarterings >= 32)  // Reduced from 64 since we quarter faster
+    // Coral reward schedule:
+    // - Start at 10 CORAL per block
+    // - Halve every 105,000 blocks (~2 years)
+    // - Total supply: ~2.1 million CORAL
+    //
+    // Timeline:
+    // Era 0 (blocks 0-104,999):      10 CORAL  -> 1,050,000 mined (50%)
+    // Era 1 (blocks 105k-209,999):    5 CORAL  -> 1,575,000 mined (75%)
+    // Era 2 (blocks 210k-314,999):  2.5 CORAL  -> 1,837,500 mined (87.5%)
+    // ...continues halving until rewards < 1 satoshi
+
+    int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
+
+    // Force reward to zero after 64 halvings (prevents shift overflow)
+    if (halvings >= 64) {
         return 0;
-
-    // Coral: Start with 100 CORAL per block
-    CAmount nSubsidy = 100 * COIN;
-
-    // Coral: QUARTER the reward every epoch instead of halving
-    // 100 → 25 → 6.25 → 1.5625 → 0.390625 → etc.
-    // Much more aggressive deflationary model than Coral
-    for (int i = 0; i < quarterings; i++) {
-        nSubsidy >>= 2;  // Divide by 4 (quarter) instead of 2 (halve)
     }
+
+    CAmount nSubsidy = 10 * COIN;
+    nSubsidy >>= halvings;
 
     return nSubsidy;
 }

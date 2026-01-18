@@ -46,6 +46,7 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QFile>
 #include <QLatin1String>
 #include <QLibraryInfo>
 #include <QLocale>
@@ -527,8 +528,8 @@ int GuiMain(int argc, char* argv[])
     // Do not refer to data directory yet, this can be overridden by Intro::pickDataDirectory
 
     /// 1. Basic Qt initialization (not dependent on parameters or configuration)
-    Q_INIT_RESOURCE(coral);
-    Q_INIT_RESOURCE(coral_locale);
+    Q_INIT_RESOURCE(bitcoin);
+    Q_INIT_RESOURCE(bitcoin_locale);
 
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     // Generate high-dpi pixmaps
@@ -561,6 +562,14 @@ int GuiMain(int argc, char* argv[])
 
     // Now that the QApplication is setup and we have parsed our parameters, we can set the platform style
     app.setupPlatformStyle();
+
+    // Apply Coral dark theme
+    QFile styleFile(":/css/dark_theme.qss");
+    if (styleFile.open(QFile::ReadOnly)) {
+        QString styleSheet = QLatin1String(styleFile.readAll());
+        app.setStyleSheet(styleSheet);
+        styleFile.close();
+    }
 
     /// 3. Application identification
     // must be set before OptionsModel is initialized or translations are loaded,

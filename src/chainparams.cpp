@@ -17,26 +17,25 @@
 #include <limits>
 
 /**
- * Build the genesis block with a coinbase transaction.
+ * Build the genesis block with NO OUTPUT.
  *
- * The coinbase contains the famous newspaper headline as proof-of-date,
- * and pays the block reward to the genesis public key.
+ * Coral genesis block has no spendable output - the genesis is purely ceremonial.
+ * All coins come into existence through mining starting at block 1.
  *
- * Genesis Message: "17/Jan/2026 Copper prices hit historic highs as electric vehicle demand surges"
- * Genesis Public Key: 020600a997bdceb13273e9de1db3c252f91731fba6cfb4a33411dccb17f113f8af
+ * Genesis Message: "17/Jan/2026 Coral - RandomX + 21e8 micro-PoW"
  */
-static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript,
-                                  uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion,
-                                  const CAmount& genesisReward)
+static CBlock CreateGenesisBlock(const char* pszTimestamp,
+                                  uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion)
 {
     CMutableTransaction txNew;
     txNew.nVersion = 1;
     txNew.vin.resize(1);
     txNew.vout.resize(1);
-    // Coinbase scriptSig: OP_PUSHDATA of nBits + OP_PUSHDATA of extra nonce (4) + timestamp message
+    // Coinbase scriptSig contains timestamp message only
     txNew.vin[0].scriptSig = CScript() << 486604799 << CScriptNum(4) << std::vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
-    txNew.vout[0].nValue = genesisReward;
-    txNew.vout[0].scriptPubKey = genesisOutputScript;
+    // Unspendable OP_RETURN output - genesis is ceremonial, no coins created
+    txNew.vout[0].nValue = 0;
+    txNew.vout[0].scriptPubKey = CScript() << OP_RETURN << std::vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
 
     CBlock genesis;
     genesis.nTime    = nTime;
@@ -51,20 +50,14 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
 
 /**
  * Build the genesis block with default Coral parameters.
+ * Genesis has NO output - all coins mined starting at block 1.
  */
-static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
+static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion)
 {
-    // Genesis message - newspaper headline as proof of date (like Satoshi's "Chancellor on brink...")
-    const char* pszTimestamp = "17/Jan/2026 Copper prices hit historic highs as electric vehicle demand surges";
+    // Genesis message - proof of date and project identity
+    const char* pszTimestamp = "17/Jan/2026 Coral - RandomX + 21e8 micro-PoW";
 
-    // Genesis public key (compressed) - block reward goes here
-    // Private key: a027030ccc1367613206d231d86f0551f82d43962f923e56f1d2fd6745ca09b3
-    const std::vector<unsigned char> genesisPubKey = ParseHex("020600a997bdceb13273e9de1db3c252f91731fba6cfb4a33411dccb17f113f8af");
-
-    // Pay-to-public-key script (like Bitcoin's genesis)
-    CScript genesisOutputScript = CScript() << genesisPubKey << OP_CHECKSIG;
-
-    return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
+    return CreateGenesisBlock(pszTimestamp, nTime, nNonce, nBits, nVersion);
 }
 
 /**
@@ -76,7 +69,7 @@ public:
         strNetworkID = CBaseChainParams::MAIN;
         consensus.signet_blocks = false;
         consensus.signet_challenge.clear();
-        consensus.nSubsidyHalvingInterval = 210000;  // Coral: Actually "quartering" interval - reward ÷ 4 every 210k blocks
+        consensus.nSubsidyHalvingInterval = 105000;  // Coral: halve every 105k blocks (~2 years)
         consensus.script_flag_exceptions.emplace( // BIP16 exception
             uint256S("0x00000000000002dc756eebf4f49723ed8d30cc28a5f108eb94b1ba88ac4f9c22"), SCRIPT_VERIFY_NONE);
         consensus.script_flag_exceptions.emplace( // Taproot exception
@@ -124,18 +117,18 @@ public:
         m_assumed_blockchain_size = 496;
         m_assumed_chain_state_size = 6;
 
-        // Genesis block - 17/Jan/2026 "Copper prices hit historic highs as electric vehicle demand surges"
-        // Timestamp: 1768629600 (January 17, 2026 00:00:00 UTC)
-        // Block reward: 50 CORAL
-        uint32_t nTime = 1768629600;
-        uint32_t nNonce = 7497377;
-        uint32_t nBits = 0x1e00ffff;
+        // Genesis block - Fresh chain start
+        // Timestamp: 1737100800 (January 17, 2025 00:00:00 UTC)
+        // NO OUTPUT - genesis is ceremonial, all coins mined from block 1
+        uint32_t nTime = 1737100800;
+        uint32_t nNonce = 1047283;
+        uint32_t nBits = 0x1e0fffff;  // Very easy initial difficulty
 
-        genesis = CreateGenesisBlock(nTime, nNonce, nBits, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(nTime, nNonce, nBits, 1);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        assert(consensus.hashGenesisBlock == uint256S("0x00000065614d33a5d0452c96f9b2da0755bec2963c0fe6bfa87e6e019993cbd7"));
-        assert(genesis.hashMerkleRoot == uint256S("0x952f0fff49e1a16c0b4e2054c7559f01642c4b1d79b91688d09a42caa89957af"));
+        assert(consensus.hashGenesisBlock == uint256S("0x000008f6fd447935219623f341a3a229226c8b587f970923231ddeacf4dae780"));
+        assert(genesis.hashMerkleRoot == uint256S("0x1b9767c1afba4386a334e0d9cc45bf01c19dd1524be25758d11b12d7ac32d955"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
         // possible options.
@@ -204,7 +197,7 @@ public:
         strNetworkID = CBaseChainParams::TESTNET;
         consensus.signet_blocks = false;
         consensus.signet_challenge.clear();
-        consensus.nSubsidyHalvingInterval = 210000;  // Coral: Actually "quartering" interval - reward ÷ 4 every 210k blocks
+        consensus.nSubsidyHalvingInterval = 105000;  // Coral: halve every 105k blocks (~2 years)
         consensus.script_flag_exceptions.emplace( // BIP16 exception
             uint256S("0x00000000dd30457c001f4095d208cc1296b0eed002427aa599874af7a432b105"), SCRIPT_VERIFY_NONE);
         consensus.BIP34Height = 21111;
@@ -245,11 +238,11 @@ public:
         m_assumed_blockchain_size = 42;
         m_assumed_chain_state_size = 2;
 
-        genesis = CreateGenesisBlock(1768629600, 0, 0x1d00ffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1737100800, 1047283, 0x1e0fffff, 1);
         consensus.hashGenesisBlock = genesis.GetHash();
-        // Testnet genesis assertions - will be filled after mining
-        // assert(consensus.hashGenesisBlock == uint256S("0x[TESTNET_GENESIS_HASH]"));
-        // assert(genesis.hashMerkleRoot == uint256S("0x[TESTNET_MERKLE_ROOT]"));
+
+        assert(consensus.hashGenesisBlock == uint256S("0x000008f6fd447935219623f341a3a229226c8b587f970923231ddeacf4dae780"));
+        assert(genesis.hashMerkleRoot == uint256S("0x1b9767c1afba4386a334e0d9cc45bf01c19dd1524be25758d11b12d7ac32d955"));
 
         vFixedSeeds.clear();
         vSeeds.clear();
@@ -347,7 +340,7 @@ public:
         strNetworkID = CBaseChainParams::SIGNET;
         consensus.signet_blocks = true;
         consensus.signet_challenge.assign(bin.begin(), bin.end());
-        consensus.nSubsidyHalvingInterval = 210000;  // Coral: Actually "quartering" interval - reward ÷ 4 every 210k blocks
+        consensus.nSubsidyHalvingInterval = 105000;  // Coral: halve every 105k blocks (~2 years)
         consensus.BIP34Height = 1;
         consensus.BIP34Hash = uint256{};
         consensus.BIP65Height = 1;
@@ -382,11 +375,11 @@ public:
         nDefaultPort = 38334; // Coral signet port
         nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1768629600, 0, 0x1e0377ae, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1737100800, 1047283, 0x1e0fffff, 1);
         consensus.hashGenesisBlock = genesis.GetHash();
-        // Signet genesis assertions - will be filled after mining
-        // assert(consensus.hashGenesisBlock == uint256S("0x[SIGNET_GENESIS_HASH]"));
-        // assert(genesis.hashMerkleRoot == uint256S("0x[SIGNET_MERKLE_ROOT]"));
+
+        assert(consensus.hashGenesisBlock == uint256S("0x000008f6fd447935219623f341a3a229226c8b587f970923231ddeacf4dae780"));
+        assert(genesis.hashMerkleRoot == uint256S("0x1b9767c1afba4386a334e0d9cc45bf01c19dd1524be25758d11b12d7ac32d955"));
 
         vFixedSeeds.clear();
 
@@ -455,11 +448,8 @@ public:
 
         UpdateActivationParametersFromArgs(args);
 
-        genesis = CreateGenesisBlock(1768629600, 0, 0x207fffff, 1, 50 * COIN);
+        genesis = CreateGenesisBlock(1737100800, 0, 0x207fffff, 1);
         consensus.hashGenesisBlock = genesis.GetHash();
-        // Regtest genesis assertions - will be filled after mining
-        // assert(consensus.hashGenesisBlock == uint256S("0x[REGTEST_GENESIS_HASH]"));
-        // assert(genesis.hashMerkleRoot == uint256S("0x[REGTEST_MERKLE_ROOT]"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
         vSeeds.clear();

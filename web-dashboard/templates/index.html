@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coral Node Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+            background: #0a0a0f;
+            color: #00ff88;
+            min-height: 100vh;
+            font-size: 12px;
+        }
+        .header {
+            background: linear-gradient(90deg, #1a0a2e 0%, #0a1a2e 100%);
+            padding: 15px 30px;
+            border-bottom: 1px solid #00ff88;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #00ff88;
+            text-shadow: 0 0 10px #00ff88;
+        }
+        .header-stats {
+            display: flex;
+            gap: 30px;
+            font-size: 11px;
+        }
+        .header-stat { text-align: right; }
+        .header-stat .value { color: #fff; font-size: 14px; }
+        .container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+        .sidebar {
+            width: 200px;
+            background: #0d0d15;
+            border-right: 1px solid #333;
+            padding: 10px 0;
+        }
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .sidebar-item:hover, .sidebar-item.active {
+            background: #1a1a2e;
+            border-left-color: #00ff88;
+            color: #fff;
+        }
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .panel {
+            background: #0d0d15;
+            border: 1px solid #333;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .panel-header {
+            background: #1a1a2e;
+            padding: 10px 15px;
+            border-bottom: 1px solid #333;
+            font-weight: bold;
+            color: #00ff88;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-body { padding: 15px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a1a2e;
+        }
+        .data-row:last-child { border-bottom: none; }
+        .data-label { color: #666; }
+        .data-value { color: #fff; text-align: right; word-break: break-all; }
+        .data-value.hash { color: #ff6b6b; font-size: 10px; }
+        .data-value.number { color: #4ecdc4; }
+        .data-value.success { color: #00ff88; }
+        .data-value.warning { color: #ffaa00; }
+        .data-value.error { color: #ff4444; }
+        .big-stat {
+            text-align: center;
+            padding: 20px;
+        }
+        .big-stat .value {
+            font-size: 36px;
+            color: #00ff88;
+            text-shadow: 0 0 20px #00ff88;
+        }
+        .big-stat .label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .btn {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .btn:hover { background: #00cc6a; }
+        .btn-small { padding: 4px 8px; font-size: 10px; }
+        .btn-danger { background: #ff4444; }
+        .btn-warning { background: #ffaa00; color: #000; }
+        .btn-secondary { background: #333; color: #fff; }
+        input, select, textarea {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 11px;
+            width: 100%;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+        textarea { resize: vertical; min-height: 80px; }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .input-group input { flex: 1; }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #333;
+            margin-bottom: 15px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            color: #666;
+        }
+        .tab:hover { color: #fff; }
+        .tab.active {
+            color: #00ff88;
+            border-bottom-color: #00ff88;
+        }
+        .console {
+            background: #000;
+            border: 1px solid #333;
+            padding: 10px;
+            font-size: 11px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .console-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .log-entry { margin-bottom: 5px; }
+        .log-entry.error { color: #ff4444; }
+        .log-entry.success { color: #00ff88; }
+        .log-entry.info { color: #4ecdc4; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #1a1a2e;
+        }
+        th {
+            color: #666;
+            font-weight: normal;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-dot.online { background: #00ff88; box-shadow: 0 0 5px #00ff88; }
+        .status-dot.offline { background: #ff4444; }
+        .status-dot.syncing { background: #ffaa00; animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .progress-bar {
+            background: #1a1a2e;
+            height: 20px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #4ecdc4);
+            transition: width 0.3s;
+        }
+        .hidden { display: none; }
+        .copy-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 2px 5px;
+        }
+        .copy-btn:hover { color: #00ff88; }
+        .section { margin-bottom: 20px; }
+        .section-title {
+            color: #00ff88;
+            margin-bottom: 10px;
+            font-size: 14px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+        .utxo-item, .tx-item {
+            background: #1a1a2e;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 3px;
+            border-left: 3px solid #00ff88;
+        }
+        .address-card {
+            background: #1a1a2e;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .address-card .address {
+            font-size: 14px;
+            color: #ff6b6b;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CORAL NODE</h1>
+        <div class="header-stats">
+            <div class="header-stat">
+                <div class="value" id="h-blocks">--</div>
+                <div>Blocks</div>
+            </div>
+            <div class="header-stat">
+                <div class="value" id="h-connections">--</div>
+                <div>Peers</div>
+            </div>
+            <div class="header-stat">
+                <div class="value" id="h-balance">--</div>
+                <div>Balance</div>
+            </div>
+            <div class="header-stat">
+                <span class="status-dot" id="h-status"></span>
+                <span id="h-status-text">--</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-item active" onclick="showPage('overview')">Overview</div>
+            <div class="sidebar-item" onclick="showPage('blockchain')">Blockchain</div>
+            <div class="sidebar-item" onclick="showPage('wallet')">Wallet</div>
+            <div class="sidebar-item" onclick="showPage('network')">Network</div>
+            <div class="sidebar-item" onclick="showPage('mempool')">Mempool</div>
+            <div class="sidebar-item" onclick="showPage('console')">Console</div>
+            <div class="sidebar-item" onclick="showPage('raw')">Raw TX</div>
+            <div class="sidebar-item" onclick="showPage('debug')">Debug</div>
+        </div>
+
+        <div class="main">
+            <!-- Overview Page -->
+            <div id="page-overview" class="page">
+                <div class="grid-4">
+                    <div class="panel">
+                        <div class="panel-body big-stat">
+                            <div class="value" id="stat-height">0</div>
+                            <div class="label">Block Height</div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-body big-stat">
+                            <div class="value" id="stat-difficulty">0</div>
+                            <div class="label">Difficulty</div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-body big-stat">
+                            <div class="value" id="stat-hashrate">0</div>
+                            <div class="label">Network H/s</div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-body big-stat">
+                            <div class="value" id="stat-mempool">0</div>
+                            <div class="label">Mempool TX</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header">Blockchain Info</div>
+                        <div class="panel-body" id="blockchain-info">Loading...</div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">Network Info</div>
+                        <div class="panel-body" id="network-info">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Genesis Block</div>
+                    <div class="panel-body">
+                        <div class="data-row">
+                            <span class="data-label">Message</span>
+                            <span class="data-value">"17/Jan/2026 Copper prices hit historic highs as electric vehicle demand surges"</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Hash</span>
+                            <span class="data-value hash">00000065614d33a5d0452c96f9b2da0755bec2963c0fe6bfa87e6e019993cbd7</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Merkle Root</span>
+                            <span class="data-value hash">952f0fff49e1a16c0b4e2054c7559f01642c4b1d79b91688d09a42caa89957af</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Timestamp</span>
+                            <span class="data-value">1768629600 (Jan 17, 2026 00:00:00 UTC)</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">nBits</span>
+                            <span class="data-value number">0x1e00ffff</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Nonce</span>
+                            <span class="data-value number">7497377</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Reward</span>
+                            <span class="data-value number">50 CORAL</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="data-label">Genesis Pubkey</span>
+                            <span class="data-value hash">020600a997bdceb13273e9de1db3c252f91731fba6cfb4a33411dccb17f113f8af</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blockchain Page -->
+            <div id="page-blockchain" class="page hidden">
+                <div class="panel">
+                    <div class="panel-header">
+                        Block Explorer
+                        <div>
+                            <input type="text" id="block-search" placeholder="Block height or hash" style="width: 300px; display: inline-block;">
+                            <button class="btn btn-small" onclick="searchBlock()">Search</button>
+                        </div>
+                    </div>
+                    <div class="panel-body" id="block-details">
+                        <p>Enter a block height or hash to view details</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Recent Blocks <button class="btn btn-small btn-secondary" onclick="loadRecentBlocks()">Refresh</button></div>
+                    <div class="panel-body">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Height</th>
+                                    <th>Hash</th>
+                                    <th>Time</th>
+                                    <th>TXs</th>
+                                    <th>Size</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-blocks">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Chain State</div>
+                    <div class="panel-body" id="chain-state">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Wallet Page -->
+            <div id="page-wallet" class="page hidden">
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header">
+                            Wallet
+                            <select id="wallet-select" onchange="selectWallet()" style="width: 150px;">
+                                <option value="">Select...</option>
+                            </select>
+                        </div>
+                        <div class="panel-body">
+                            <div class="big-stat">
+                                <div class="value" id="wallet-balance">0.00000000</div>
+                                <div class="label">CORAL</div>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Unconfirmed</span>
+                                <span class="data-value" id="wallet-unconfirmed">0.00000000</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Immature</span>
+                                <span class="data-value" id="wallet-immature">0.00000000</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">TX Count</span>
+                                <span class="data-value" id="wallet-txcount">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">Wallet Management</div>
+                        <div class="panel-body">
+                            <div class="section">
+                                <div class="section-title">Create Wallet</div>
+                                <div class="input-group">
+                                    <input type="text" id="new-wallet-name" placeholder="Wallet name">
+                                    <button class="btn" onclick="createWallet()">Create</button>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <div class="section-title">Load Wallet</div>
+                                <div class="input-group">
+                                    <input type="text" id="load-wallet-name" placeholder="Wallet name">
+                                    <button class="btn" onclick="loadWallet()">Load</button>
+                                </div>
+                            </div>
+                            <div class="section">
+                                <div class="section-title">Import Private Key</div>
+                                <div class="input-group">
+                                    <input type="text" id="import-privkey" placeholder="WIF private key">
+                                    <button class="btn" onclick="importPrivkey()">Import</button>
+                                </div>
+                                <div style="margin-top: 5px; color: #666; font-size: 10px;">
+                                    Genesis WIF: QApgUuie6qfYnNkGBveuhX1KD842y8fcvWyN5eVBixy79TczoGi2
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header">Receive <button class="btn btn-small" onclick="newAddress()">New Address</button></div>
+                        <div class="panel-body">
+                            <div id="receive-address" class="address-card">
+                                <div class="address" id="current-address">No address generated</div>
+                            </div>
+                            <div class="section">
+                                <div class="section-title">All Addresses</div>
+                                <div id="address-list" style="max-height: 200px; overflow-y: auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">Send</div>
+                        <div class="panel-body">
+                            <div class="section">
+                                <label>To Address</label>
+                                <input type="text" id="send-address" placeholder="Recipient address">
+                            </div>
+                            <div class="section">
+                                <label>Amount (CORAL)</label>
+                                <input type="number" id="send-amount" placeholder="0.00000000" step="0.00000001">
+                            </div>
+                            <div class="section">
+                                <label>Fee Rate (sat/vB)</label>
+                                <input type="number" id="send-fee" value="1" min="1">
+                            </div>
+                            <button class="btn" onclick="sendTransaction()">Send</button>
+                            <div id="send-result" style="margin-top: 10px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Transactions <button class="btn btn-small btn-secondary" onclick="loadTransactions()">Refresh</button></div>
+                    <div class="panel-body">
+                        <div id="transaction-list" style="max-height: 400px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">UTXOs <button class="btn btn-small btn-secondary" onclick="loadUTXOs()">Refresh</button></div>
+                    <div class="panel-body">
+                        <div id="utxo-list" style="max-height: 300px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Page -->
+            <div id="page-network" class="page hidden">
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header">Network Status</div>
+                        <div class="panel-body" id="net-status">Loading...</div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">Local Addresses</div>
+                        <div class="panel-body" id="local-addresses">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        Connected Peers
+                        <button class="btn btn-small btn-secondary" onclick="loadPeers()">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Address</th>
+                                    <th>Version</th>
+                                    <th>Height</th>
+                                    <th>Ping</th>
+                                    <th>Sent</th>
+                                    <th>Recv</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="peer-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Add Node</div>
+                    <div class="panel-body">
+                        <div class="input-group">
+                            <input type="text" id="add-node-addr" placeholder="IP:Port">
+                            <button class="btn" onclick="addNode()">Add</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Banned Peers</div>
+                    <div class="panel-body" id="banned-list">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Mempool Page -->
+            <div id="page-mempool" class="page hidden">
+                <div class="grid-3">
+                    <div class="panel">
+                        <div class="panel-body big-stat">
+                            <div class="value" id="mp-size">0</div>
+                            <div class="label">Transactions</div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-body big-stat">
+                            <div class="value" id="mp-bytes">0 B</div>
+                            <div class="label">Memory Size</div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-body big-stat">
+                            <div class="value" id="mp-fee">0</div>
+                            <div class="label">Min Fee (sat/vB)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Mempool Info</div>
+                    <div class="panel-body" id="mempool-details">Loading...</div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        Raw Mempool
+                        <button class="btn btn-small btn-secondary" onclick="loadRawMempool()">Refresh</button>
+                    </div>
+                    <div class="panel-body">
+                        <div id="raw-mempool" class="console" style="max-height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Console Page -->
+            <div id="page-console" class="page hidden">
+                <div class="panel">
+                    <div class="panel-header">RPC Console</div>
+                    <div class="panel-body">
+                        <div id="console-output" class="console"></div>
+                        <div class="console-input">
+                            <input type="text" id="console-input" placeholder="Enter RPC command (e.g., getblockchaininfo)" onkeypress="if(event.key==='Enter')executeCommand()">
+                            <button class="btn" onclick="executeCommand()">Execute</button>
+                        </div>
+                        <div style="margin-top: 10px; color: #666; font-size: 10px;">
+                            Common commands: getblockchaininfo, getnetworkinfo, getmininginfo, getpeerinfo, listwallets, getbalance, getnewaddress
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Quick Commands</div>
+                    <div class="panel-body">
+                        <button class="btn btn-secondary" onclick="quickCmd('getblockchaininfo')">getblockchaininfo</button>
+                        <button class="btn btn-secondary" onclick="quickCmd('getnetworkinfo')">getnetworkinfo</button>
+                        <button class="btn btn-secondary" onclick="quickCmd('getmininginfo')">getmininginfo</button>
+                        <button class="btn btn-secondary" onclick="quickCmd('getpeerinfo')">getpeerinfo</button>
+                        <button class="btn btn-secondary" onclick="quickCmd('getmempoolinfo')">getmempoolinfo</button>
+                        <button class="btn btn-secondary" onclick="quickCmd('listwallets')">listwallets</button>
+                        <button class="btn btn-secondary" onclick="quickCmd('uptime')">uptime</button>
+                        <button class="btn btn-secondary" onclick="quickCmd('getbestblockhash')">getbestblockhash</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raw TX Page -->
+            <div id="page-raw" class="page hidden">
+                <div class="panel">
+                    <div class="panel-header">Decode Raw Transaction</div>
+                    <div class="panel-body">
+                        <textarea id="decode-tx-hex" placeholder="Paste raw transaction hex here"></textarea>
+                        <button class="btn" onclick="decodeRawTx()" style="margin-top: 10px;">Decode</button>
+                        <div id="decode-result" class="console" style="margin-top: 10px; min-height: 100px;"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Get Raw Transaction</div>
+                    <div class="panel-body">
+                        <div class="input-group">
+                            <input type="text" id="get-tx-id" placeholder="Transaction ID">
+                            <button class="btn" onclick="getRawTx()">Get</button>
+                        </div>
+                        <div id="raw-tx-result" class="console" style="margin-top: 10px; min-height: 100px;"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Broadcast Transaction</div>
+                    <div class="panel-body">
+                        <textarea id="broadcast-tx-hex" placeholder="Raw transaction hex to broadcast"></textarea>
+                        <button class="btn" onclick="broadcastTx()" style="margin-top: 10px;">Broadcast</button>
+                        <div id="broadcast-result" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Debug Page -->
+            <div id="page-debug" class="page hidden">
+                <div class="grid-2">
+                    <div class="panel">
+                        <div class="panel-header">Node Info</div>
+                        <div class="panel-body" id="debug-node">Loading...</div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">Memory Info</div>
+                        <div class="panel-body" id="debug-memory">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Chain Tips</div>
+                    <div class="panel-body" id="chain-tips">Loading...</div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">Deployment Info</div>
+                    <div class="panel-body" id="deployment-info">Loading...</div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">RPC Info</div>
+                    <div class="panel-body" id="rpc-info">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentWallet = null;
+        const API = '/api';
+
+        async function fetchAPI(endpoint) {
+            try {
+                const r = await fetch(API + endpoint);
+                return await r.json();
+            } catch (e) {
+                return { error: e.message };
+            }
+        }
+
+        async function postAPI(endpoint, data = {}) {
+            try {
+                const r = await fetch(API + endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                return await r.json();
+            } catch (e) {
+                return { error: e.message };
+            }
+        }
+
+        function showPage(name) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+            document.getElementById('page-' + name).classList.remove('hidden');
+            event.target.classList.add('active');
+
+            // Load page-specific data
+            if (name === 'blockchain') loadBlockchainPage();
+            if (name === 'wallet') loadWalletPage();
+            if (name === 'network') loadNetworkPage();
+            if (name === 'mempool') loadMempoolPage();
+            if (name === 'debug') loadDebugPage();
+        }
+
+        function formatNumber(n, decimals = 2) {
+            if (typeof n !== 'number') return n;
+            return n.toLocaleString(undefined, { maximumFractionDigits: decimals });
+        }
+
+        function formatBytes(b) {
+            if (b === 0) return '0 B';
+            const k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(b) / Math.log(k));
+            return (b / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+        }
+
+        function formatTime(ts) {
+            return new Date(ts * 1000).toLocaleString();
+        }
+
+        function renderData(obj) {
+            if (!obj || typeof obj !== 'object') return String(obj);
+            return Object.entries(obj).map(([k, v]) => {
+                let cls = 'data-value';
+                if (typeof v === 'string' && v.length > 40) cls += ' hash';
+                if (typeof v === 'number') cls += ' number';
+                return `<div class="data-row"><span class="data-label">${k}</span><span class="${cls}">${typeof v === 'object' ? JSON.stringify(v) : v}</span></div>`;
+            }).join('');
+        }
+
+        // Overview
+        async function refreshOverview() {
+            const info = await fetchAPI('/info');
+
+            if (info.blockchain) {
+                const bc = info.blockchain;
+                document.getElementById('stat-height').textContent = bc.blocks || 0;
+                document.getElementById('h-blocks').textContent = bc.blocks || 0;
+                document.getElementById('stat-difficulty').textContent = formatNumber(bc.difficulty, 8);
+
+                const statusDot = document.getElementById('h-status');
+                const statusText = document.getElementById('h-status-text');
+                if (bc.initialblockdownload) {
+                    statusDot.className = 'status-dot syncing';
+                    statusText.textContent = 'Syncing';
+                } else {
+                    statusDot.className = 'status-dot online';
+                    statusText.textContent = 'Synced';
+                }
+
+                document.getElementById('blockchain-info').innerHTML = renderData(bc);
+            }
+
+            if (info.network) {
+                document.getElementById('h-connections').textContent = info.network.connections || 0;
+                document.getElementById('network-info').innerHTML = renderData(info.network);
+            }
+
+            if (info.mining) {
+                document.getElementById('stat-hashrate').textContent = formatNumber(info.mining.networkhashps || 0, 0);
+            }
+
+            const mp = await fetchAPI('/mempool');
+            if (mp && !mp.error) {
+                document.getElementById('stat-mempool').textContent = mp.size || 0;
+            }
+        }
+
+        // Wallet
+        async function loadWalletPage() {
+            const wallets = await fetchAPI('/wallets');
+            const select = document.getElementById('wallet-select');
+            select.innerHTML = '<option value="">Select...</option>';
+            if (wallets.wallets) {
+                wallets.wallets.forEach(w => {
+                    select.innerHTML += `<option value="${w}">${w}</option>`;
+                });
+            }
+            if (currentWallet) {
+                select.value = currentWallet;
+                selectWallet();
+            }
+        }
+
+        async function selectWallet() {
+            currentWallet = document.getElementById('wallet-select').value;
+            if (!currentWallet) return;
+
+            const info = await fetchAPI(`/wallet/${currentWallet}`);
+            if (info && !info.error) {
+                document.getElementById('wallet-balance').textContent = (info.balance || 0).toFixed(8);
+                document.getElementById('h-balance').textContent = (info.balance || 0).toFixed(4);
+                document.getElementById('wallet-unconfirmed').textContent = (info.unconfirmed_balance || 0).toFixed(8);
+                document.getElementById('wallet-immature').textContent = (info.immature_balance || 0).toFixed(8);
+                document.getElementById('wallet-txcount').textContent = info.txcount || 0;
+            }
+
+            loadTransactions();
+            loadUTXOs();
+            loadAddresses();
+        }
+
+        async function loadTransactions() {
+            if (!currentWallet) return;
+            const data = await fetchAPI(`/wallet/${currentWallet}/transactions`);
+            const el = document.getElementById('transaction-list');
+            if (data.transactions && data.transactions.length > 0) {
+                el.innerHTML = data.transactions.map(tx => `
+                    <div class="tx-item">
+                        <div style="display:flex;justify-content:space-between;">
+                            <span class="${tx.amount >= 0 ? 'success' : 'error'}">${tx.category}: ${tx.amount} CORAL</span>
+                            <span>${tx.confirmations} conf</span>
+                        </div>
+                        <div class="hash" style="font-size:10px;">${tx.txid}</div>
+                        <div style="color:#666;font-size:10px;">${formatTime(tx.time)}</div>
+                    </div>
+                `).join('');
+            } else {
+                el.innerHTML = '<div style="color:#666;">No transactions</div>';
+            }
+        }
+
+        async function loadUTXOs() {
+            if (!currentWallet) return;
+            const data = await fetchAPI(`/wallet/${currentWallet}/utxos`);
+            const el = document.getElementById('utxo-list');
+            if (data.utxos && data.utxos.length > 0) {
+                el.innerHTML = data.utxos.map(u => `
+                    <div class="utxo-item">
+                        <div><span class="number">${u.amount} CORAL</span> (${u.confirmations} conf)</div>
+                        <div class="hash" style="font-size:10px;">${u.txid}:${u.vout}</div>
+                        <div style="color:#666;font-size:10px;">${u.address}</div>
+                    </div>
+                `).join('');
+            } else {
+                el.innerHTML = '<div style="color:#666;">No UTXOs</div>';
+            }
+        }
+
+        async function loadAddresses() {
+            if (!currentWallet) return;
+            const data = await fetchAPI(`/wallet/${currentWallet}/addresses`);
+            const el = document.getElementById('address-list');
+            if (data.addresses && data.addresses.length > 0) {
+                el.innerHTML = data.addresses.map(a => `
+                    <div style="padding:5px;border-bottom:1px solid #1a1a2e;">
+                        <span class="hash">${a.address}</span>
+                        <span style="color:#4ecdc4;margin-left:10px;">${a.amount} CORAL</span>
+                    </div>
+                `).join('');
+            } else {
+                el.innerHTML = '<div style="color:#666;">No addresses with balance</div>';
+            }
+        }
+
+        async function newAddress() {
+            if (!currentWallet) { alert('Select a wallet first'); return; }
+            const data = await fetchAPI(`/wallet/${currentWallet}/newaddress`);
+            if (data.address) {
+                document.getElementById('current-address').textContent = data.address;
+            } else {
+                alert(data.error || 'Error');
+            }
+        }
+
+        async function createWallet() {
+            const name = document.getElementById('new-wallet-name').value;
+            if (!name) { alert('Enter wallet name'); return; }
+            const data = await postAPI('/createwallet', { name });
+            if (data.name) {
+                alert('Wallet created: ' + data.name);
+                loadWalletPage();
+            } else {
+                alert(data.error || 'Error');
+            }
+        }
+
+        async function loadWallet() {
+            const name = document.getElementById('load-wallet-name').value;
+            if (!name) { alert('Enter wallet name'); return; }
+            const data = await postAPI('/loadwallet', { name });
+            if (data.name) {
+                alert('Wallet loaded: ' + data.name);
+                loadWalletPage();
+            } else {
+                alert(data.error || data.message || 'Error');
+            }
+        }
+
+        async function importPrivkey() {
+            if (!currentWallet) { alert('Select a wallet first'); return; }
+            const key = document.getElementById('import-privkey').value;
+            if (!key) { alert('Enter private key'); return; }
+            const data = await postAPI(`/wallet/${currentWallet}/importprivkey`, { key });
+            if (data.success) {
+                alert('Private key imported successfully!');
+                selectWallet();
+            } else {
+                alert(data.error || 'Error importing key');
+            }
+        }
+
+        async function sendTransaction() {
+            if (!currentWallet) { alert('Select a wallet first'); return; }
+            const address = document.getElementById('send-address').value;
+            const amount = document.getElementById('send-amount').value;
+            if (!address || !amount) { alert('Enter address and amount'); return; }
+
+            const data = await postAPI(`/wallet/${currentWallet}/send`, { address, amount: parseFloat(amount) });
+            const el = document.getElementById('send-result');
+            if (data.txid) {
+                el.innerHTML = `<span class="success">Sent! TXID: </span><span class="hash">${data.txid}</span>`;
+                selectWallet();
+            } else {
+                el.innerHTML = `<span class="error">${data.error || 'Error'}</span>`;
+            }
+        }
+
+        // Blockchain
+        async function loadBlockchainPage() {
+            loadRecentBlocks();
+            const state = await fetchAPI('/chainstate');
+            document.getElementById('chain-state').innerHTML = renderData(state);
+        }
+
+        async function loadRecentBlocks() {
+            const data = await fetchAPI('/recentblocks');
+            const el = document.getElementById('recent-blocks');
+            if (data.blocks) {
+                el.innerHTML = data.blocks.map(b => `
+                    <tr onclick="viewBlock('${b.hash}')" style="cursor:pointer;">
+                        <td>${b.height}</td>
+                        <td class="hash">${b.hash.substring(0, 20)}...</td>
+                        <td>${formatTime(b.time)}</td>
+                        <td>${b.nTx}</td>
+                        <td>${formatBytes(b.size)}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        async function searchBlock() {
+            const q = document.getElementById('block-search').value;
+            if (!q) return;
+            viewBlock(q);
+        }
+
+        async function viewBlock(hashOrHeight) {
+            const data = await fetchAPI(`/block/${hashOrHeight}`);
+            document.getElementById('block-details').innerHTML = data.error ?
+                `<span class="error">${data.error}</span>` :
+                `<pre style="white-space:pre-wrap;word-break:break-all;">${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        // Network
+        async function loadNetworkPage() {
+            const net = await fetchAPI('/networkdetails');
+            document.getElementById('net-status').innerHTML = renderData(net);
+
+            const local = await fetchAPI('/localaddresses');
+            document.getElementById('local-addresses').innerHTML = local.addresses ?
+                local.addresses.map(a => `<div>${a.address}:${a.port} (score: ${a.score})</div>`).join('') :
+                'No local addresses';
+
+            loadPeers();
+            loadBanned();
+        }
+
+        async function loadPeers() {
+            const data = await fetchAPI('/peers');
+            const el = document.getElementById('peer-list');
+            if (data.peers && data.peers.length > 0) {
+                el.innerHTML = data.peers.map(p => `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.addr}</td>
+                        <td>${p.subver || '-'}</td>
+                        <td>${p.synced_blocks || '-'}</td>
+                        <td>${p.pingtime ? (p.pingtime * 1000).toFixed(0) + 'ms' : '-'}</td>
+                        <td>${formatBytes(p.bytessent || 0)}</td>
+                        <td>${formatBytes(p.bytesrecv || 0)}</td>
+                        <td>${formatTime(p.conntime)}</td>
+                    </tr>
+                `).join('');
+            } else {
+                el.innerHTML = '<tr><td colspan="8">No peers connected</td></tr>';
+            }
+        }
+
+        async function loadBanned() {
+            const data = await fetchAPI('/banned');
+            document.getElementById('banned-list').innerHTML = data.banned && data.banned.length > 0 ?
+                data.banned.map(b => `<div>${b.address} until ${formatTime(b.banned_until)}</div>`).join('') :
+                'No banned peers';
+        }
+
+        async function addNode() {
+            const addr = document.getElementById('add-node-addr').value;
+            if (!addr) return;
+            const data = await postAPI('/addnode', { addr });
+            alert(data.success ? 'Node added' : (data.error || 'Error'));
+        }
+
+        // Mempool
+        async function loadMempoolPage() {
+            const mp = await fetchAPI('/mempool');
+            if (mp) {
+                document.getElementById('mp-size').textContent = mp.size || 0;
+                document.getElementById('mp-bytes').textContent = formatBytes(mp.bytes || 0);
+                document.getElementById('mp-fee').textContent = ((mp.mempoolminfee || 0) * 100000000).toFixed(0);
+                document.getElementById('mempool-details').innerHTML = renderData(mp);
+            }
+            loadRawMempool();
+        }
+
+        async function loadRawMempool() {
+            const data = await fetchAPI('/rawmempool');
+            document.getElementById('raw-mempool').textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Console
+        async function executeCommand() {
+            const input = document.getElementById('console-input');
+            const cmd = input.value.trim();
+            if (!cmd) return;
+
+            const output = document.getElementById('console-output');
+            output.innerHTML += `<div class="log-entry info">&gt; ${cmd}</div>`;
+
+            const data = await postAPI('/rpc', { command: cmd });
+            const result = data.error ?
+                `<div class="log-entry error">${JSON.stringify(data.error)}</div>` :
+                `<div class="log-entry success">${JSON.stringify(data.result, null, 2)}</div>`;
+            output.innerHTML += result;
+            output.scrollTop = output.scrollHeight;
+            input.value = '';
+        }
+
+        function quickCmd(cmd) {
+            document.getElementById('console-input').value = cmd;
+            executeCommand();
+        }
+
+        // Raw TX
+        async function decodeRawTx() {
+            const hex = document.getElementById('decode-tx-hex').value;
+            if (!hex) return;
+            const data = await postAPI('/decodetx', { hex });
+            document.getElementById('decode-result').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function getRawTx() {
+            const txid = document.getElementById('get-tx-id').value;
+            if (!txid) return;
+            const data = await fetchAPI(`/rawtx/${txid}`);
+            document.getElementById('raw-tx-result').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function broadcastTx() {
+            const hex = document.getElementById('broadcast-tx-hex').value;
+            if (!hex) return;
+            const data = await postAPI('/broadcast', { hex });
+            document.getElementById('broadcast-result').innerHTML = data.txid ?
+                `<span class="success">Broadcast! TXID: ${data.txid}</span>` :
+                `<span class="error">${data.error || 'Error'}</span>`;
+        }
+
+        // Debug
+        async function loadDebugPage() {
+            const info = await fetchAPI('/debuginfo');
+            document.getElementById('debug-node').innerHTML = renderData(info.node || {});
+            document.getElementById('debug-memory').innerHTML = renderData(info.memory || {});
+
+            const tips = await fetchAPI('/chaintips');
+            document.getElementById('chain-tips').innerHTML = `<pre>${JSON.stringify(tips, null, 2)}</pre>`;
+
+            const deploy = await fetchAPI('/deploymentinfo');
+            document.getElementById('deployment-info').innerHTML = `<pre>${JSON.stringify(deploy, null, 2)}</pre>`;
+
+            const rpc = await fetchAPI('/rpcinfo');
+            document.getElementById('rpc-info').innerHTML = `<pre>${JSON.stringify(rpc, null, 2)}</pre>`;
+        }
+
+        // Init
+        refreshOverview();
+        setInterval(refreshOverview, 5000);
+    </script>
+</body>
+</html>

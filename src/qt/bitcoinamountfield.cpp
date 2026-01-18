@@ -215,7 +215,7 @@ Q_SIGNALS:
     void valueChanged();
 };
 
-#include <qt/coralamountfield.moc>
+#include <qt/bitcoinamountfield.moc>
 
 CoralAmountField::CoralAmountField(QWidget *parent) :
     QWidget(parent),

@@ -12,9 +12,20 @@ src/bitcoin-tx
 src/bitcoin-util
 src/bitcoin-chainstate
 src/bitcoin-wallet
+src/coral
+src/corald
+src/coral-cli
+src/coral-gui
+src/coral-node
+src/coral-tx
+src/coral-util
+src/coral-chainstate
+src/coral-wallet
+src/genesis-miner
 src/test/fuzz/fuzz
 src/test/test_bitcoin
 src/qt/test/test_bitcoin-qt
+src/qt/test/test_coral-qt
 
 # autoreconf
 Makefile.in
@@ -109,6 +120,20 @@ qrc_*.cpp
 # Mac specific
 .DS_Store
 build
+
+# Coral-specific ignores
+src/config/coral-config.h
+src/config/coral-config.h.in
+libcoralconsensus.pc
+src/qt/coral-qt
+Coral-Qt.app
+.lineno
+Screenshot*
+
+# Python virtual environments
+venv/
+__pycache__/
+*.pyc
 
 # Previous releases
 releases
