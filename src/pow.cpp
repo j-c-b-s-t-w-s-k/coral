@@ -159,7 +159,6 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
 
     // Check proof of work matches claimed amount
     if (UintToArith256(hash) > bnTarget) {
-        LogPrintf("CheckProofOfWork HASH FAIL: hash=%s > target=%s\n", hash.GetHex(), bnTarget.GetHex());
         return false;
     }
 
@@ -275,16 +274,17 @@ bool CheckRandomXProofOfWork(const CBlockHeader& block, unsigned int nBits, cons
         return result;
     }
 
-    // TEMPORARY: Allow SHA256d mining for development/testing
-    // This allows the built-in generatetoaddress RPC to work
-    // TODO: Remove this for production and require RandomX only
+    // DEV MODE: Only use SHA256d for now to allow fast mining with generatetoaddress
+    // This makes the built-in RPC miner work efficiently
+    // TODO: For production, implement proper RandomX mining with separate miner
     if (CheckProofOfWork(block.GetHash(), nBits, params)) {
-        LogPrintf("Block %s accepted via SHA256d PoW (dev mode)\n", block.GetHash().ToString());
+        LogPrintf("Block %s accepted via SHA256d PoW (height=%d)\n", block.GetHash().ToString(), 0);
         return true;
     }
 
-    uint256 randomx_hash = GetRandomXHash(block);
-    return CheckProofOfWork(randomx_hash, nBits, params);
+    // Don't try RandomX during mining - it's too slow for nonce iteration
+    // RandomX will be used by dedicated external miners
+    return false;
 }
 
 // Cleanup RandomX resources

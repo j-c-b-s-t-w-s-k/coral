@@ -82,7 +82,7 @@ public:
         consensus.SegwitHeight = std::numeric_limits<int>::max(); // SegWit disabled in Coral
         consensus.MinBIP9WarningHeight = 0; // No SegWit warning needed
         // powLimit must allow nBits of 0x1e00ffff (Coral initial difficulty - easier than Bitcoin)
-        consensus.powLimit = uint256S("0000ffff00000000000000000000000000000000000000000000000000000000");
+        consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -208,7 +208,7 @@ public:
         consensus.SegwitHeight = std::numeric_limits<int>::max(); // SegWit disabled in Coral testnet
         consensus.MinBIP9WarningHeight = 0; // No SegWit warning needed
         // powLimit must allow nBits of 0x1e00ffff (Coral initial difficulty - easier than Bitcoin)
-        consensus.powLimit = uint256S("0000ffff00000000000000000000000000000000000000000000000000000000");
+        consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
         consensus.fPowAllowMinDifficultyBlocks = true;
