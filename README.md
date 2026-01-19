@@ -6,6 +6,61 @@ Coral is a peer-to-peer electronic cash system derived from the Bitcoin Core ref
 
 This document provides comprehensive technical specifications, build instructions, operational parameters, and security considerations for the Coral network.
 
+---
+
+## Quick Start
+
+### Download (macOS)
+
+Download the latest release: **[Coral-Qt.dmg](https://github.com/j-c-b-s-t-w-s-k/coral/releases)**
+
+1. Open the DMG and drag Coral-Qt to Applications
+2. Launch Coral-Qt
+3. The wallet will automatically connect to the network via `seed.coral.directory`
+4. Start mining from the Mining tab in the GUI
+
+### Build from Source (Quick)
+
+```bash
+# Clone
+git clone https://github.com/j-c-b-s-t-w-s-k/coral.git
+cd coral
+
+# Install RandomX (required)
+git clone https://github.com/tevador/RandomX.git
+cd RandomX && mkdir build && cd build
+cmake -DARCH=native .. && make -j$(nproc) && sudo make install && sudo ldconfig
+cd ../..
+
+# Build Coral
+./autogen.sh && ./configure --with-gui=qt5 && make -j$(nproc)
+
+# Run
+./src/qt/bitcoin-qt    # GUI wallet
+./src/corald -daemon   # Daemon
+```
+
+### Start Mining
+
+**GUI:** Open Coral-Qt → Mining tab → Click "Start Mining"
+
+**CLI:**
+```bash
+./src/coral-cli generatetoaddress 1 $(./src/coral-cli getnewaddress) 10000000
+```
+
+### Network Info
+
+| | |
+|---|---|
+| **Seed Node** | seed.coral.directory:8334 |
+| **P2P Port** | 8334 |
+| **Algorithm** | RandomX (CPU-friendly) |
+| **Block Time** | 10 minutes |
+| **Block Reward** | 50 CRL |
+
+---
+
 ## Table of Contents
 
 1. [Technical Specifications](#technical-specifications)
