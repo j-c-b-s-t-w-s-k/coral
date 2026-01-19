@@ -300,13 +300,19 @@ void CoralGUI::createActions()
     miningAction->setShortcut(QKeySequence(QStringLiteral("Alt+7")));
     tabGroup->addAction(miningAction);
 
-    // Poker disabled for now - needs serialization fixes
-    // pokerAction = new QAction(platformStyle->SingleColorIcon(":/icons/poker"), tr("&Poker"), this);
-    // pokerAction->setStatusTip(tr("Play decentralized poker games"));
-    // pokerAction->setToolTip(pokerAction->statusTip());
-    // pokerAction->setCheckable(true);
-    // pokerAction->setShortcut(QKeySequence(QStringLiteral("Alt+8")));
-    // tabGroup->addAction(pokerAction);
+    pokerAction = new QAction(platformStyle->SingleColorIcon(":/icons/poker"), tr("&Poker"), this);
+    pokerAction->setStatusTip(tr("Play decentralized poker games"));
+    pokerAction->setToolTip(pokerAction->statusTip());
+    pokerAction->setCheckable(true);
+    pokerAction->setShortcut(QKeySequence(QStringLiteral("Alt+8")));
+    tabGroup->addAction(pokerAction);
+
+    chatAction = new QAction(platformStyle->SingleColorIcon(":/icons/chat"), tr("&Chat"), this);
+    chatAction->setStatusTip(tr("Network chat room for Coral participants"));
+    chatAction->setToolTip(chatAction->statusTip());
+    chatAction->setCheckable(true);
+    chatAction->setShortcut(QKeySequence(QStringLiteral("Alt+9")));
+    tabGroup->addAction(chatAction);
 
 #ifdef ENABLE_WALLET
     // These showNormalIfMinimized are needed because Send Coins and Receive Coins
@@ -325,8 +331,10 @@ void CoralGUI::createActions()
     connect(marketAction, &QAction::triggered, this, &CoralGUI::gotoMarketPage);
     connect(miningAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
     connect(miningAction, &QAction::triggered, this, &CoralGUI::gotoMiningPage);
-    // connect(pokerAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
-    // connect(pokerAction, &QAction::triggered, this, &CoralGUI::gotoPokerPage);
+    connect(pokerAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
+    connect(pokerAction, &QAction::triggered, this, &CoralGUI::gotoPokerPage);
+    connect(chatAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
+    connect(chatAction, &QAction::triggered, this, &CoralGUI::gotoChatPage);
 #endif // ENABLE_WALLET
 
     quitAction = new QAction(tr("E&xit"), this);
@@ -619,7 +627,8 @@ void CoralGUI::createToolBars()
         toolbar->addAction(networkAction);
         toolbar->addAction(marketAction);
         toolbar->addAction(miningAction);
-        // toolbar->addAction(pokerAction);
+        toolbar->addAction(pokerAction);
+        toolbar->addAction(chatAction);
         overviewAction->setChecked(true);
 
 #ifdef ENABLE_WALLET
@@ -822,6 +831,8 @@ void CoralGUI::setWalletActionsEnabled(bool enabled)
     historyAction->setEnabled(enabled);
     marketAction->setEnabled(enabled);
     miningAction->setEnabled(enabled);
+    pokerAction->setEnabled(enabled);
+    chatAction->setEnabled(enabled);
     encryptWalletAction->setEnabled(enabled);
     backupWalletAction->setEnabled(enabled);
     changePassphraseAction->setEnabled(enabled);
@@ -992,11 +1003,17 @@ void CoralGUI::gotoMiningPage()
     if (walletFrame) walletFrame->gotoMiningPage();
 }
 
-// void CoralGUI::gotoPokerPage()
-// {
-//     pokerAction->setChecked(true);
-//     if (walletFrame) walletFrame->gotoPokerPage();
-// }
+void CoralGUI::gotoPokerPage()
+{
+    pokerAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoPokerPage();
+}
+
+void CoralGUI::gotoChatPage()
+{
+    chatAction->setChecked(true);
+    if (walletFrame) walletFrame->gotoChatPage();
+}
 
 void CoralGUI::gotoHistoryPage()
 {

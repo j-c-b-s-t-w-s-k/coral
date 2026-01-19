@@ -1,4 +1,4 @@
-// Copyright (c) 2026 The Coral Core developers
+// Copyright (c) 2024 The Coral Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -11,36 +11,29 @@
 class ClientModel;
 class WalletModel;
 class PlatformStyle;
+class ListingCard;
+class StatusBadge;
 
 QT_BEGIN_NAMESPACE
 class QLabel;
 class QLineEdit;
 class QTextEdit;
 class QPushButton;
-class QProgressBar;
 class QGroupBox;
-class QSpinBox;
 class QDoubleSpinBox;
 class QComboBox;
 class QListWidget;
 class QListWidgetItem;
 class QTabWidget;
 class QVBoxLayout;
+class QScrollArea;
+class QGridLayout;
 QT_END_NAMESPACE
 
-// Listing structure for marketplace items
-struct MarketListing {
-    QString id;
-    QString title;
-    QString description;
-    QString category;
-    double price;
-    QString sellerAddress;
-    QString imageHash;  // IPFS hash for image
-    qint64 timestamp;
-    bool isActive;
-};
-
+/**
+ * Marketplace page with bioport terminal aesthetic.
+ * Browse, buy, and sell items using CRL with escrow protection.
+ */
 class MarketPage : public QWidget
 {
     Q_OBJECT
@@ -54,19 +47,26 @@ public:
 
 private Q_SLOTS:
     void onCreateListingClicked();
-    void onBuyItemClicked();
-    void onRefreshListingsClicked();
-    void onListingSelected(QListWidgetItem *item);
+    void onBuyItemClicked(const QString &listingId);
+    void onListingClicked(const QString &listingId);
     void onCategoryChanged(int index);
     void onSearchClicked();
     void refreshListings();
+    void updateBalance();
+
+Q_SIGNALS:
+    void message(const QString &title, const QString &message, unsigned int style);
 
 private:
     void setupUI();
-    void createBrowseTab(QVBoxLayout *layout);
-    void createSellTab(QVBoxLayout *layout);
-    void createMyListingsTab(QVBoxLayout *layout);
-    void addMockListings();  // Temporary: add demo listings
+    void applyBioportTheme();
+    void createBrowseTab(QWidget *tab);
+    void createSellTab(QWidget *tab);
+    void createOrdersTab(QWidget *tab);
+    void createMyListingsTab(QWidget *tab);
+    void populateListings();
+    void showListingDetails(const QString &listingId);
+    QString formatPrice(double amount) const;
 
     const PlatformStyle *platformStyle;
     ClientModel *clientModel{nullptr};
@@ -74,16 +74,24 @@ private:
     QTimer *refreshTimer{nullptr};
     QTabWidget *tabWidget{nullptr};
 
+    // Header
+    QLabel *titleLabel{nullptr};
+    QLabel *balanceLabel{nullptr};
+
     // Browse tab
-    QListWidget *listingsWidget{nullptr};
+    QScrollArea *listingsScrollArea{nullptr};
+    QWidget *listingsContainer{nullptr};
+    QGridLayout *listingsGrid{nullptr};
     QComboBox *categoryFilter{nullptr};
     QLineEdit *searchEdit{nullptr};
     QPushButton *searchButton{nullptr};
+    QWidget *detailsPanel{nullptr};
+    QLabel *detailTitleLabel{nullptr};
+    QLabel *detailPriceLabel{nullptr};
+    QLabel *detailDescLabel{nullptr};
+    QLabel *detailSellerLabel{nullptr};
+    StatusBadge *detailStatusBadge{nullptr};
     QPushButton *buyButton{nullptr};
-    QLabel *itemTitleLabel{nullptr};
-    QLabel *itemPriceLabel{nullptr};
-    QLabel *itemDescriptionLabel{nullptr};
-    QLabel *itemSellerLabel{nullptr};
 
     // Sell tab
     QLineEdit *listingTitleEdit{nullptr};
@@ -93,13 +101,15 @@ private:
     QPushButton *createListingButton{nullptr};
     QLabel *listingStatusLabel{nullptr};
 
+    // Orders tab
+    QListWidget *ordersWidget{nullptr};
+
     // My Listings tab
     QListWidget *myListingsWidget{nullptr};
     QPushButton *removeListingButton{nullptr};
 
-    // Mock data storage (temporary)
-    QList<MarketListing> mockListings;
-    MarketListing *selectedListing{nullptr};
+    // Current selection
+    QString selectedListingId;
 };
 
 #endif // CORAL_QT_MARKETPAGE_H

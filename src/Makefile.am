@@ -331,6 +331,14 @@ CORAL_CORE_H = \
   wallet/walletutil.h \
   walletinitinterface.h \
   warnings.h \
+  poker/poker.h \
+  poker/pokercards.h \
+  poker/pokerescrow.h \
+  poker/mentalpoker.h \
+  poker/pokernet.h \
+  poker/pokertypes.h \
+  identity/useridentity.h \
+  identity/identitymanager.h \
   zmq/zmqabstractnotifier.h \
   zmq/zmqnotificationinterface.h \
   zmq/zmqpublishnotifier.h \
@@ -482,6 +490,13 @@ libcoral_wallet_a_SOURCES = \
   wallet/walletdb.cpp \
   wallet/walletutil.cpp \
   wallet/coinselection.cpp \
+  poker/poker.cpp \
+  poker/pokercards.cpp \
+  poker/pokerescrow.cpp \
+  poker/mentalpoker.cpp \
+  poker/pokernet.cpp \
+  identity/useridentity.cpp \
+  identity/identitymanager.cpp \
   $(CORAL_CORE_H)
 
 if USE_SQLITE

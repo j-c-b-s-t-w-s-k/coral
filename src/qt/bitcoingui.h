@@ -138,7 +138,8 @@ private:
     QAction* networkAction = nullptr;
     QAction* marketAction = nullptr;
     QAction* miningAction = nullptr;
-    // QAction* pokerAction = nullptr;
+    QAction* pokerAction = nullptr;
+    QAction* chatAction = nullptr;
     QAction* historyAction = nullptr;
     QAction* quitAction = nullptr;
     QAction* sendCoinsAction = nullptr;
@@ -286,8 +287,10 @@ public Q_SLOTS:
     void gotoMarketPage();
     /** Switch to mining page */
     void gotoMiningPage();
-    // /** Switch to poker page */
-    // void gotoPokerPage();
+    /** Switch to poker page */
+    void gotoPokerPage();
+    /** Switch to chat page */
+    void gotoChatPage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch to receive coins page */

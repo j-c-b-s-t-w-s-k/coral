@@ -176,12 +176,19 @@ void WalletFrame::gotoMiningPage()
         i.value()->gotoMiningPage();
 }
 
-// void WalletFrame::gotoPokerPage()
-// {
-//     QMap<WalletModel*, WalletView*>::const_iterator i;
-//     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
-//         i.value()->gotoPokerPage();
-// }
+void WalletFrame::gotoPokerPage()
+{
+    QMap<WalletModel*, WalletView*>::const_iterator i;
+    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+        i.value()->gotoPokerPage();
+}
+
+void WalletFrame::gotoChatPage()
+{
+    QMap<WalletModel*, WalletView*>::const_iterator i;
+    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+        i.value()->gotoChatPage();
+}
 
 void WalletFrame::gotoHistoryPage()
 {

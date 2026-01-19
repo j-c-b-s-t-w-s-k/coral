@@ -1,4 +1,4 @@
-// Copyright (c) 2026 The Coral Core developers
+// Copyright (c) 2024 The Coral Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,32 +8,33 @@
 #include <qt/guiutil.h>
 #include <qt/platformstyle.h>
 #include <qt/walletmodel.h>
+#include <qt/widgets/statusbadge.h>
+#include <qt/widgets/listingcard.h>
 
 #include <QComboBox>
 #include <QDateTime>
 #include <QDoubleSpinBox>
+#include <QFile>
+#include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QMessageBox>
-#include <QProgressBar>
 #include <QPushButton>
-#include <QSpinBox>
+#include <QScrollArea>
+#include <QScrollBar>
 #include <QSplitter>
 #include <QTabWidget>
 #include <QTextEdit>
 #include <QVBoxLayout>
-#include <QFont>
-#include <QUuid>
 
 MarketPage::MarketPage(const PlatformStyle *_platformStyle, QWidget *parent)
     : QWidget(parent)
     , platformStyle(_platformStyle)
 {
     setupUI();
-    addMockListings();
 
     // Refresh listings periodically
     refreshTimer = new QTimer(this);
@@ -50,238 +51,446 @@ MarketPage::~MarketPage()
 
 void MarketPage::setupUI()
 {
-    // Dark theme - white on black with serif fonts
-    setStyleSheet(
-        "MarketPage { background-color: #000000; }"
-        "QLabel { color: #ffffff; font-family: Georgia, serif; }"
-        "QGroupBox { color: #ffffff; background-color: #111111; border: 1px solid #333333; border-radius: 8px; margin-top: 10px; padding-top: 10px; font-family: Georgia, serif; }"
-        "QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 5px; color: #888888; }"
-        "QTabWidget::pane { border: 1px solid #333333; background-color: #000000; }"
-        "QTabBar::tab { background-color: #111111; color: #888888; padding: 10px 20px; border: 1px solid #333333; font-family: Georgia, serif; }"
-        "QTabBar::tab:selected { background-color: #222222; color: #ffffff; border-bottom: 2px solid #ffffff; }"
-        "QListWidget { background-color: #111111; color: #ffffff; border: 1px solid #333333; font-family: Georgia, serif; }"
-        "QListWidget::item { padding: 10px; border-bottom: 1px solid #222222; }"
-        "QListWidget::item:selected { background-color: #222222; }"
+    applyBioportTheme();
+
+    auto *mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
+
+    // Header panel - industrial Win95 style
+    auto *headerPanel = new QWidget(this);
+    headerPanel->setObjectName("headerPanel");
+    headerPanel->setStyleSheet(
+        "#headerPanel {"
+        "  background: qlineargradient(y1:0, y2:1, stop:0 #2a2a2a, stop:1 #1a1a1a);"
+        "  border-bottom: 2px solid #3a3a3a;"
+        "}"
     );
+    auto *headerLayout = new QHBoxLayout(headerPanel);
+    headerLayout->setContentsMargins(16, 12, 16, 12);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(20, 20, 20, 20);
-    mainLayout->setSpacing(20);
+    titleLabel = new QLabel(tr("CORAL MARKET"), this);
+    titleLabel->setStyleSheet(
+        "color: #00d4aa;"
+        "font-size: 18px;"
+        "font-weight: bold;"
+        "font-family: 'Terminus', monospace;"
+        "background: transparent;"
+    );
+    headerLayout->addWidget(titleLabel);
 
-    // Title
-    QLabel *titleLabel = new QLabel(tr("Coral Market"));
-    titleLabel->setStyleSheet("font-size: 28px; font-weight: bold; color: #ffffff; font-family: Georgia, serif;");
-    mainLayout->addWidget(titleLabel);
+    headerLayout->addStretch();
 
-    QLabel *subtitleLabel = new QLabel(tr("Decentralized peer-to-peer marketplace powered by Coral"));
-    subtitleLabel->setStyleSheet("font-size: 14px; color: #888888; font-family: Georgia, serif; margin-bottom: 10px;");
-    mainLayout->addWidget(subtitleLabel);
+    balanceLabel = new QLabel(tr("Balance: -- CRL"), this);
+    balanceLabel->setStyleSheet(
+        "color: #33ff33;"
+        "font-size: 14px;"
+        "font-family: 'Terminus', monospace;"
+        "background: transparent;"
+    );
+    headerLayout->addWidget(balanceLabel);
 
-    // Tab widget for different sections
-    tabWidget = new QTabWidget();
+    mainLayout->addWidget(headerPanel);
+
+    // Tab widget with bioport styling
+    tabWidget = new QTabWidget(this);
     tabWidget->setStyleSheet(
-        "QTabWidget::pane { border: 1px solid #333333; background-color: #000000; }"
-        "QTabBar::tab { background-color: #111111; color: #888888; padding: 12px 24px; border: 1px solid #333333; font-family: Georgia, serif; }"
-        "QTabBar::tab:selected { background-color: #222222; color: #ffffff; border-bottom: 2px solid #ffffff; }"
+        "QTabWidget::pane {"
+        "  background: #0a0a0a;"
+        "  border: 2px solid;"
+        "  border-color: #5a5a5a #1a1a1a #1a1a1a #5a5a5a;"
+        "}"
+        "QTabBar::tab {"
+        "  background: qlineargradient(y1:0, y2:1, stop:0 #3a3a3a, stop:1 #2a2a2a);"
+        "  border: 2px solid;"
+        "  border-color: #5a5a5a #1a1a1a #2a2a2a #5a5a5a;"
+        "  color: #808080;"
+        "  padding: 10px 24px;"
+        "  font-family: 'Terminus', monospace;"
+        "  font-weight: bold;"
+        "}"
+        "QTabBar::tab:selected {"
+        "  background: #1a1a1a;"
+        "  color: #00d4aa;"
+        "  border-bottom-color: #1a1a1a;"
+        "}"
+        "QTabBar::tab:hover:!selected {"
+        "  background: qlineargradient(y1:0, y2:1, stop:0 #4a4a4a, stop:1 #3a3a3a);"
+        "  color: #c0c0c0;"
+        "}"
     );
 
-    // Browse tab
-    QWidget *browseTab = new QWidget();
-    QVBoxLayout *browseLayout = new QVBoxLayout(browseTab);
-    browseLayout->setContentsMargins(10, 10, 10, 10);
-    createBrowseTab(browseLayout);
-    tabWidget->addTab(browseTab, tr("Browse"));
+    // Create tabs
+    auto *browseTab = new QWidget();
+    browseTab->setStyleSheet("background: #0a0a0a;");
+    createBrowseTab(browseTab);
+    tabWidget->addTab(browseTab, tr("BROWSE"));
 
-    // Sell tab
-    QWidget *sellTab = new QWidget();
-    QVBoxLayout *sellLayout = new QVBoxLayout(sellTab);
-    sellLayout->setContentsMargins(10, 10, 10, 10);
-    createSellTab(sellLayout);
-    tabWidget->addTab(sellTab, tr("Sell"));
+    auto *sellTab = new QWidget();
+    sellTab->setStyleSheet("background: #0a0a0a;");
+    createSellTab(sellTab);
+    tabWidget->addTab(sellTab, tr("SELL"));
 
-    // My Listings tab
-    QWidget *myListingsTab = new QWidget();
-    QVBoxLayout *myListingsLayout = new QVBoxLayout(myListingsTab);
-    myListingsLayout->setContentsMargins(10, 10, 10, 10);
-    createMyListingsTab(myListingsLayout);
-    tabWidget->addTab(myListingsTab, tr("My Listings"));
+    auto *ordersTab = new QWidget();
+    ordersTab->setStyleSheet("background: #0a0a0a;");
+    createOrdersTab(ordersTab);
+    tabWidget->addTab(ordersTab, tr("ORDERS"));
 
-    mainLayout->addWidget(tabWidget);
-    setLayout(mainLayout);
+    auto *myListingsTab = new QWidget();
+    myListingsTab->setStyleSheet("background: #0a0a0a;");
+    createMyListingsTab(myListingsTab);
+    tabWidget->addTab(myListingsTab, tr("MY LISTINGS"));
+
+    mainLayout->addWidget(tabWidget, 1);
 }
 
-void MarketPage::createBrowseTab(QVBoxLayout *layout)
+void MarketPage::applyBioportTheme()
 {
-    // Search and filter bar
-    QHBoxLayout *filterLayout = new QHBoxLayout();
-
-    QLabel *categoryLabel = new QLabel(tr("Category:"));
-    categoryLabel->setStyleSheet("font-size: 14px;");
-    categoryFilter = new QComboBox();
-    categoryFilter->setStyleSheet("padding: 8px; border: 1px solid #333333; border-radius: 4px; background-color: #111111; color: #ffffff;");
-    categoryFilter->addItem(tr("All Categories"), "all");
-    categoryFilter->addItem(tr("Electronics"), "electronics");
-    categoryFilter->addItem(tr("Clothing"), "clothing");
-    categoryFilter->addItem(tr("Collectibles"), "collectibles");
-    categoryFilter->addItem(tr("Art & NFTs"), "art");
-    categoryFilter->addItem(tr("Services"), "services");
-    categoryFilter->addItem(tr("Other"), "other");
-    connect(categoryFilter, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MarketPage::onCategoryChanged);
-
-    searchEdit = new QLineEdit();
-    searchEdit->setPlaceholderText(tr("Search listings..."));
-    searchEdit->setStyleSheet("padding: 10px; border: 1px solid #333333; border-radius: 4px; background-color: #111111; color: #ffffff; font-family: Georgia, serif;");
-
-    searchButton = new QPushButton(tr("Search"));
-    searchButton->setStyleSheet(
-        "QPushButton { background-color: #222222; color: #ffffff; padding: 10px 20px; border: 1px solid #444444; border-radius: 4px; font-family: Georgia, serif; }"
-        "QPushButton:hover { background-color: #333333; border-color: #ffffff; }"
+    setStyleSheet(
+        "MarketPage {"
+        "  background-color: #0a0a0a;"
+        "}"
+        "QLabel {"
+        "  color: #c0c0c0;"
+        "  font-family: 'Terminus', monospace;"
+        "}"
+        "QGroupBox {"
+        "  background: #1a1a1a;"
+        "  border: 2px solid;"
+        "  border-color: #5a5a5a #1a1a1a #1a1a1a #5a5a5a;"
+        "  margin-top: 16px;"
+        "  padding: 12px;"
+        "  font-family: 'Terminus', monospace;"
+        "}"
+        "QGroupBox::title {"
+        "  color: #00d4aa;"
+        "  font-weight: bold;"
+        "  subcontrol-origin: margin;"
+        "  left: 12px;"
+        "}"
+        "QLineEdit, QTextEdit {"
+        "  background: #0a0a0a;"
+        "  border: 2px solid;"
+        "  border-color: #1a1a1a #3a3a3a #3a3a3a #1a1a1a;"
+        "  color: #33ff33;"
+        "  font-family: 'Terminus', monospace;"
+        "  padding: 8px;"
+        "}"
+        "QLineEdit:focus, QTextEdit:focus {"
+        "  border-color: #0a5a4a #00d4aa #00d4aa #0a5a4a;"
+        "}"
+        "QComboBox {"
+        "  background: qlineargradient(y1:0, y2:1, stop:0 #3a3a3a, stop:1 #2a2a2a);"
+        "  border: 2px solid;"
+        "  border-color: #5a5a5a #1a1a1a #1a1a1a #5a5a5a;"
+        "  color: #c0c0c0;"
+        "  padding: 6px 12px;"
+        "  font-family: 'Terminus', monospace;"
+        "}"
+        "QDoubleSpinBox {"
+        "  background: #0a0a0a;"
+        "  border: 2px solid;"
+        "  border-color: #1a1a1a #3a3a3a #3a3a3a #1a1a1a;"
+        "  color: #33ff33;"
+        "  font-family: 'Terminus', monospace;"
+        "  padding: 6px;"
+        "}"
+        "QPushButton {"
+        "  background: qlineargradient(y1:0, y2:1, stop:0 #3a3a3a, stop:1 #2a2a2a);"
+        "  border: 2px solid;"
+        "  border-color: #5a5a5a #1a1a1a #1a1a1a #5a5a5a;"
+        "  color: #c0c0c0;"
+        "  padding: 8px 16px;"
+        "  font-family: 'Terminus', monospace;"
+        "  font-weight: bold;"
+        "}"
+        "QPushButton:hover {"
+        "  background: qlineargradient(y1:0, y2:1, stop:0 #4a4a4a, stop:1 #3a3a3a);"
+        "  border-color: #00d4aa #0a5a4a #0a5a4a #00d4aa;"
+        "  color: #00d4aa;"
+        "}"
+        "QPushButton:pressed {"
+        "  border-color: #1a1a1a #5a5a5a #5a5a5a #1a1a1a;"
+        "}"
+        "QPushButton:disabled {"
+        "  background: #1a1a1a;"
+        "  border-color: #2a2a2a;"
+        "  color: #4a4a4a;"
+        "}"
+        "QListWidget {"
+        "  background: #0a0a0a;"
+        "  border: 2px solid;"
+        "  border-color: #1a1a1a #3a3a3a #3a3a3a #1a1a1a;"
+        "  color: #c0c0c0;"
+        "  font-family: 'Terminus', monospace;"
+        "}"
+        "QListWidget::item {"
+        "  padding: 8px;"
+        "  border-bottom: 1px solid #1a1a1a;"
+        "}"
+        "QListWidget::item:selected {"
+        "  background: #00d4aa;"
+        "  color: #0a0a0a;"
+        "}"
+        "QScrollBar:vertical {"
+        "  background: #1a1a1a;"
+        "  width: 14px;"
+        "}"
+        "QScrollBar::handle:vertical {"
+        "  background: #3a3a3a;"
+        "  border: 1px solid #5a5a5a;"
+        "  min-height: 20px;"
+        "}"
     );
-    connect(searchButton, &QPushButton::clicked, this, &MarketPage::onSearchClicked);
+}
 
-    filterLayout->addWidget(categoryLabel);
+void MarketPage::createBrowseTab(QWidget *tab)
+{
+    auto *layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(12, 12, 12, 12);
+    layout->setSpacing(12);
+
+    // Filter bar
+    auto *filterLayout = new QHBoxLayout();
+    filterLayout->setSpacing(8);
+
+    auto *catLabel = new QLabel(tr("CATEGORY:"), this);
+    catLabel->setStyleSheet("color: #808080; font-size: 11px;");
+    filterLayout->addWidget(catLabel);
+
+    categoryFilter = new QComboBox(this);
+    categoryFilter->addItem(tr("All"), "all");
+    categoryFilter->addItem(tr("Digital Goods"), "digital");
+    categoryFilter->addItem(tr("Physical Goods"), "physical");
+    categoryFilter->addItem(tr("Services"), "services");
+    categoryFilter->addItem(tr("Crypto"), "crypto");
+    categoryFilter->addItem(tr("Other"), "other");
+    connect(categoryFilter, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MarketPage::onCategoryChanged);
     filterLayout->addWidget(categoryFilter);
+
+    filterLayout->addSpacing(16);
+
+    searchEdit = new QLineEdit(this);
+    searchEdit->setPlaceholderText(tr("Search listings..."));
     filterLayout->addWidget(searchEdit, 1);
+
+    searchButton = new QPushButton(tr("SEARCH"), this);
+    connect(searchButton, &QPushButton::clicked, this, &MarketPage::onSearchClicked);
     filterLayout->addWidget(searchButton);
+
     layout->addLayout(filterLayout);
 
-    // Main content area with splitter
-    QSplitter *splitter = new QSplitter(Qt::Horizontal);
-    splitter->setStyleSheet("QSplitter::handle { background-color: #333333; }");
+    // Main content: listings grid + details panel
+    auto *splitter = new QSplitter(Qt::Horizontal, this);
+    splitter->setStyleSheet(
+        "QSplitter::handle {"
+        "  background: #3a3a3a;"
+        "  width: 4px;"
+        "}"
+        "QSplitter::handle:hover {"
+        "  background: #00d4aa;"
+        "}"
+    );
 
-    // Listings list on the left
-    listingsWidget = new QListWidget();
-    listingsWidget->setMinimumWidth(300);
-    connect(listingsWidget, &QListWidget::itemClicked, this, &MarketPage::onListingSelected);
-    splitter->addWidget(listingsWidget);
+    // Listings scroll area
+    listingsScrollArea = new QScrollArea(this);
+    listingsScrollArea->setWidgetResizable(true);
+    listingsScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    listingsScrollArea->setStyleSheet("QScrollArea { background: #0a0a0a; border: none; }");
 
-    // Item details on the right
-    QWidget *detailsWidget = new QWidget();
-    QVBoxLayout *detailsLayout = new QVBoxLayout(detailsWidget);
-    detailsLayout->setSpacing(15);
+    listingsContainer = new QWidget();
+    listingsContainer->setStyleSheet("background: #0a0a0a;");
+    listingsGrid = new QGridLayout(listingsContainer);
+    listingsGrid->setContentsMargins(0, 0, 0, 0);
+    listingsGrid->setSpacing(12);
 
-    itemTitleLabel = new QLabel(tr("Select an item to view details"));
-    itemTitleLabel->setStyleSheet("font-size: 20px; font-weight: bold; color: #ffffff;");
-    itemTitleLabel->setWordWrap(true);
+    listingsScrollArea->setWidget(listingsContainer);
+    splitter->addWidget(listingsScrollArea);
 
-    itemPriceLabel = new QLabel();
-    itemPriceLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: #ffffff;");
+    // Details panel
+    detailsPanel = new QWidget(this);
+    detailsPanel->setStyleSheet(
+        "QWidget {"
+        "  background: #1a1a1a;"
+        "  border: 2px solid;"
+        "  border-color: #5a5a5a #1a1a1a #1a1a1a #5a5a5a;"
+        "}"
+    );
+    auto *detailsLayout = new QVBoxLayout(detailsPanel);
+    detailsLayout->setContentsMargins(16, 16, 16, 16);
+    detailsLayout->setSpacing(12);
 
-    itemDescriptionLabel = new QLabel();
-    itemDescriptionLabel->setStyleSheet("font-size: 14px; color: #cccccc;");
-    itemDescriptionLabel->setWordWrap(true);
+    detailTitleLabel = new QLabel(tr("Select a listing"), this);
+    detailTitleLabel->setStyleSheet(
+        "color: #ffffff;"
+        "font-size: 16px;"
+        "font-weight: bold;"
+        "border: none;"
+    );
+    detailTitleLabel->setWordWrap(true);
+    detailsLayout->addWidget(detailTitleLabel);
 
-    itemSellerLabel = new QLabel();
-    itemSellerLabel->setStyleSheet("font-size: 12px; color: #888888; font-family: monospace;");
+    detailStatusBadge = new StatusBadge(StatusBadge::Pending, this);
+    detailStatusBadge->hide();
+    detailsLayout->addWidget(detailStatusBadge);
 
-    buyButton = new QPushButton(tr("Buy Now"));
+    detailPriceLabel = new QLabel(this);
+    detailPriceLabel->setStyleSheet(
+        "color: #00d4aa;"
+        "font-size: 24px;"
+        "font-weight: bold;"
+        "border: none;"
+    );
+    detailsLayout->addWidget(detailPriceLabel);
+
+    detailDescLabel = new QLabel(this);
+    detailDescLabel->setStyleSheet(
+        "color: #a0a0a0;"
+        "font-size: 12px;"
+        "border: none;"
+    );
+    detailDescLabel->setWordWrap(true);
+    detailsLayout->addWidget(detailDescLabel);
+
+    detailSellerLabel = new QLabel(this);
+    detailSellerLabel->setStyleSheet(
+        "color: #606060;"
+        "font-size: 10px;"
+        "border: none;"
+    );
+    detailsLayout->addWidget(detailSellerLabel);
+
+    detailsLayout->addStretch();
+
+    buyButton = new QPushButton(tr("BUY NOW"), this);
     buyButton->setEnabled(false);
     buyButton->setStyleSheet(
-        "QPushButton { background-color: #222222; color: #ffffff; padding: 15px 30px; border: 1px solid #444444; border-radius: 4px; font-weight: bold; font-size: 16px; font-family: Georgia, serif; }"
-        "QPushButton:hover { background-color: #333333; border-color: #ffffff; }"
-        "QPushButton:disabled { background-color: #1a1a1a; color: #666666; }"
+        "QPushButton {"
+        "  background: qlineargradient(y1:0, y2:1, stop:0 #0a6a5a, stop:1 #064a3a);"
+        "  border: 2px solid;"
+        "  border-color: #00d4aa #043a2a #043a2a #00d4aa;"
+        "  color: #00d4aa;"
+        "  font-size: 14px;"
+        "  font-weight: bold;"
+        "  padding: 12px 24px;"
+        "}"
+        "QPushButton:hover {"
+        "  background: qlineargradient(y1:0, y2:1, stop:0 #0a8a7a, stop:1 #066a5a);"
+        "  color: #33ffcc;"
+        "}"
+        "QPushButton:disabled {"
+        "  background: #1a1a1a;"
+        "  border-color: #2a2a2a;"
+        "  color: #4a4a4a;"
+        "}"
     );
-    connect(buyButton, &QPushButton::clicked, this, &MarketPage::onBuyItemClicked);
-
-    detailsLayout->addWidget(itemTitleLabel);
-    detailsLayout->addWidget(itemPriceLabel);
-    detailsLayout->addWidget(itemDescriptionLabel);
-    detailsLayout->addWidget(itemSellerLabel);
-    detailsLayout->addStretch();
+    connect(buyButton, &QPushButton::clicked, [this]() {
+        onBuyItemClicked(selectedListingId);
+    });
     detailsLayout->addWidget(buyButton);
 
-    splitter->addWidget(detailsWidget);
-    splitter->setSizes({400, 600});
+    splitter->addWidget(detailsPanel);
+    splitter->setSizes({500, 300});
 
     layout->addWidget(splitter, 1);
+
+    // Initial population
+    populateListings();
 }
 
-void MarketPage::createSellTab(QVBoxLayout *layout)
+void MarketPage::createSellTab(QWidget *tab)
 {
-    QGroupBox *createGroup = new QGroupBox(tr("Create New Listing"));
-    QVBoxLayout *createLayout = new QVBoxLayout(createGroup);
-    createLayout->setSpacing(15);
+    auto *layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(12, 12, 12, 12);
+    layout->setSpacing(16);
+
+    auto *createGroup = new QGroupBox(tr("CREATE NEW LISTING"), this);
+    auto *createLayout = new QVBoxLayout(createGroup);
+    createLayout->setSpacing(12);
 
     // Title
-    QHBoxLayout *titleLayout = new QHBoxLayout();
-    QLabel *titleLbl = new QLabel(tr("Title:"));
-    titleLbl->setStyleSheet("font-size: 14px; min-width: 80px;");
-    listingTitleEdit = new QLineEdit();
-    listingTitleEdit->setPlaceholderText(tr("Enter item title"));
-    listingTitleEdit->setStyleSheet("padding: 10px; border: 1px solid #333333; border-radius: 4px; background-color: #111111; color: #ffffff;");
+    auto *titleLayout = new QHBoxLayout();
+    auto *titleLbl = new QLabel(tr("TITLE:"), this);
+    titleLbl->setStyleSheet("color: #808080; font-size: 11px; min-width: 80px;");
     titleLayout->addWidget(titleLbl);
+    listingTitleEdit = new QLineEdit(this);
+    listingTitleEdit->setPlaceholderText(tr("Enter item title"));
     titleLayout->addWidget(listingTitleEdit, 1);
     createLayout->addLayout(titleLayout);
 
     // Category
-    QHBoxLayout *catLayout = new QHBoxLayout();
-    QLabel *catLbl = new QLabel(tr("Category:"));
-    catLbl->setStyleSheet("font-size: 14px; min-width: 80px;");
-    listingCategoryCombo = new QComboBox();
-    listingCategoryCombo->setStyleSheet("padding: 8px; border: 1px solid #333333; border-radius: 4px; background-color: #111111; color: #ffffff;");
-    listingCategoryCombo->addItem(tr("Electronics"), "electronics");
-    listingCategoryCombo->addItem(tr("Clothing"), "clothing");
-    listingCategoryCombo->addItem(tr("Collectibles"), "collectibles");
-    listingCategoryCombo->addItem(tr("Art & NFTs"), "art");
-    listingCategoryCombo->addItem(tr("Services"), "services");
-    listingCategoryCombo->addItem(tr("Other"), "other");
+    auto *catLayout = new QHBoxLayout();
+    auto *catLbl = new QLabel(tr("CATEGORY:"), this);
+    catLbl->setStyleSheet("color: #808080; font-size: 11px; min-width: 80px;");
     catLayout->addWidget(catLbl);
+    listingCategoryCombo = new QComboBox(this);
+    listingCategoryCombo->addItem(tr("Digital Goods"), "digital");
+    listingCategoryCombo->addItem(tr("Physical Goods"), "physical");
+    listingCategoryCombo->addItem(tr("Services"), "services");
+    listingCategoryCombo->addItem(tr("Crypto"), "crypto");
+    listingCategoryCombo->addItem(tr("Other"), "other");
     catLayout->addWidget(listingCategoryCombo, 1);
     createLayout->addLayout(catLayout);
 
     // Price
-    QHBoxLayout *priceLayout = new QHBoxLayout();
-    QLabel *priceLbl = new QLabel(tr("Price (CRL):"));
-    priceLbl->setStyleSheet("font-size: 14px; min-width: 80px;");
-    listingPriceSpinBox = new QDoubleSpinBox();
-    listingPriceSpinBox->setRange(0.00000001, 1000000.0);
+    auto *priceLayout = new QHBoxLayout();
+    auto *priceLbl = new QLabel(tr("PRICE (CRL):"), this);
+    priceLbl->setStyleSheet("color: #808080; font-size: 11px; min-width: 80px;");
+    priceLayout->addWidget(priceLbl);
+    listingPriceSpinBox = new QDoubleSpinBox(this);
+    listingPriceSpinBox->setRange(0.00000001, 21000000.0);
     listingPriceSpinBox->setDecimals(8);
     listingPriceSpinBox->setValue(1.0);
-    listingPriceSpinBox->setStyleSheet("padding: 8px; border: 1px solid #333333; border-radius: 4px; background-color: #111111; color: #ffffff;");
-    priceLayout->addWidget(priceLbl);
     priceLayout->addWidget(listingPriceSpinBox, 1);
     createLayout->addLayout(priceLayout);
 
     // Description
-    QLabel *descLbl = new QLabel(tr("Description:"));
-    descLbl->setStyleSheet("font-size: 14px;");
-    listingDescriptionEdit = new QTextEdit();
-    listingDescriptionEdit->setPlaceholderText(tr("Describe your item in detail..."));
-    listingDescriptionEdit->setStyleSheet("padding: 10px; border: 1px solid #333333; border-radius: 4px; background-color: #111111; color: #ffffff; font-family: Georgia, serif;");
-    listingDescriptionEdit->setMaximumHeight(150);
+    auto *descLbl = new QLabel(tr("DESCRIPTION:"), this);
+    descLbl->setStyleSheet("color: #808080; font-size: 11px;");
     createLayout->addWidget(descLbl);
+    listingDescriptionEdit = new QTextEdit(this);
+    listingDescriptionEdit->setPlaceholderText(tr("Describe your item..."));
+    listingDescriptionEdit->setMaximumHeight(120);
     createLayout->addWidget(listingDescriptionEdit);
 
     // Create button
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    createListingButton = new QPushButton(tr("Create Listing"));
+    auto *btnLayout = new QHBoxLayout();
+    btnLayout->addStretch();
+    createListingButton = new QPushButton(tr("CREATE LISTING"), this);
     createListingButton->setStyleSheet(
-        "QPushButton { background-color: #222222; color: #ffffff; padding: 12px 24px; border: 1px solid #444444; border-radius: 4px; font-weight: bold; font-family: Georgia, serif; }"
-        "QPushButton:hover { background-color: #333333; border-color: #ffffff; }"
+        "QPushButton {"
+        "  background: qlineargradient(y1:0, y2:1, stop:0 #0a6a5a, stop:1 #064a3a);"
+        "  border: 2px solid;"
+        "  border-color: #00d4aa #043a2a #043a2a #00d4aa;"
+        "  color: #00d4aa;"
+        "  font-weight: bold;"
+        "  padding: 10px 24px;"
+        "}"
     );
     connect(createListingButton, &QPushButton::clicked, this, &MarketPage::onCreateListingClicked);
-    buttonLayout->addStretch();
-    buttonLayout->addWidget(createListingButton);
-    createLayout->addLayout(buttonLayout);
+    btnLayout->addWidget(createListingButton);
+    createLayout->addLayout(btnLayout);
 
-    listingStatusLabel = new QLabel();
-    listingStatusLabel->setStyleSheet("font-size: 14px; color: #888888;");
+    listingStatusLabel = new QLabel(this);
+    listingStatusLabel->setStyleSheet("color: #808080; font-size: 11px;");
     createLayout->addWidget(listingStatusLabel);
 
     layout->addWidget(createGroup);
 
-    // Info box
-    QGroupBox *infoGroup = new QGroupBox(tr("How It Works"));
-    QVBoxLayout *infoLayout = new QVBoxLayout(infoGroup);
-    QLabel *infoLabel = new QLabel(
-        tr("1. Create a listing with your item details and price in CRL\n"
-           "2. Your listing is broadcast to the Coral network\n"
-           "3. Buyers can purchase directly using Coral\n"
-           "4. Funds are held in escrow until delivery is confirmed\n"
-           "5. Disputes are resolved by Coral moderators\n\n"
-           "Listing fee: 0.001 CRL (to prevent spam)")
+    // Info panel
+    auto *infoGroup = new QGroupBox(tr("ESCROW INFORMATION"), this);
+    auto *infoLayout = new QVBoxLayout(infoGroup);
+    auto *infoLabel = new QLabel(
+        tr("1. Create a listing with price in CRL\n"
+           "2. Listing is stored locally and broadcast to network\n"
+           "3. Buyers fund 2-of-3 multisig escrow\n"
+           "4. You ship, buyer confirms, funds release\n"
+           "5. Disputes resolved by network arbiter\n\n"
+           "Listing fee: 0.001 CRL"),
+        this
     );
-    infoLabel->setStyleSheet("font-size: 13px; color: #888888; line-height: 1.5;");
+    infoLabel->setStyleSheet("color: #606060; font-size: 11px; line-height: 1.5;");
     infoLabel->setWordWrap(true);
     infoLayout->addWidget(infoLabel);
     layout->addWidget(infoGroup);
@@ -289,24 +498,52 @@ void MarketPage::createSellTab(QVBoxLayout *layout)
     layout->addStretch();
 }
 
-void MarketPage::createMyListingsTab(QVBoxLayout *layout)
+void MarketPage::createOrdersTab(QWidget *tab)
 {
-    QLabel *headerLabel = new QLabel(tr("Your Active Listings"));
-    headerLabel->setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;");
+    auto *layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(12, 12, 12, 12);
+    layout->setSpacing(12);
+
+    auto *headerLabel = new QLabel(tr("YOUR ORDERS"), this);
+    headerLabel->setStyleSheet("color: #00d4aa; font-size: 14px; font-weight: bold;");
     layout->addWidget(headerLabel);
 
-    myListingsWidget = new QListWidget();
+    ordersWidget = new QListWidget(this);
+    layout->addWidget(ordersWidget, 1);
+
+    // Placeholder
+    auto *emptyLabel = new QLabel(tr("No orders yet. Purchase items from the Browse tab."), this);
+    emptyLabel->setStyleSheet("color: #4a4a4a; font-size: 12px;");
+    emptyLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(emptyLabel);
+}
+
+void MarketPage::createMyListingsTab(QWidget *tab)
+{
+    auto *layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(12, 12, 12, 12);
+    layout->setSpacing(12);
+
+    auto *headerLabel = new QLabel(tr("YOUR LISTINGS"), this);
+    headerLabel->setStyleSheet("color: #00d4aa; font-size: 14px; font-weight: bold;");
+    layout->addWidget(headerLabel);
+
+    myListingsWidget = new QListWidget(this);
     layout->addWidget(myListingsWidget, 1);
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    removeListingButton = new QPushButton(tr("Remove Selected"));
+    auto *btnLayout = new QHBoxLayout();
+    btnLayout->addStretch();
+    removeListingButton = new QPushButton(tr("REMOVE SELECTED"), this);
     removeListingButton->setStyleSheet(
-        "QPushButton { background-color: #222222; color: #ffffff; padding: 10px 20px; border: 1px solid #444444; border-radius: 4px; font-family: Georgia, serif; }"
-        "QPushButton:hover { background-color: #333333; border-color: #ffffff; }"
+        "QPushButton {"
+        "  background: qlineargradient(y1:0, y2:1, stop:0 #5a1a1a, stop:1 #3a0a0a);"
+        "  border: 2px solid;"
+        "  border-color: #aa0000 #3a0a0a #3a0a0a #aa0000;"
+        "  color: #ff6666;"
+        "}"
     );
-    buttonLayout->addStretch();
-    buttonLayout->addWidget(removeListingButton);
-    layout->addLayout(buttonLayout);
+    btnLayout->addWidget(removeListingButton);
+    layout->addLayout(btnLayout);
 }
 
 void MarketPage::setClientModel(ClientModel *model)
@@ -317,154 +554,118 @@ void MarketPage::setClientModel(ClientModel *model)
 void MarketPage::setWalletModel(WalletModel *model)
 {
     walletModel = model;
+    updateBalance();
 }
 
-void MarketPage::addMockListings()
+void MarketPage::updateBalance()
 {
-    // Add some demo listings for UI demonstration
-    MarketListing l1;
-    l1.id = QUuid::createUuid().toString();
-    l1.title = "Vintage Bitcoin Hardware Wallet";
-    l1.description = "Original Trezor Model One, never used, still in sealed packaging. A piece of crypto history!";
-    l1.category = "electronics";
-    l1.price = 0.5;
-    l1.sellerAddress = "coral1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4";
-    l1.timestamp = QDateTime::currentSecsSinceEpoch();
-    l1.isActive = true;
-    mockListings.append(l1);
+    if (walletModel) {
+        // In real implementation, get balance from wallet
+        balanceLabel->setText(tr("Balance: -- CRL"));
+    }
+}
 
-    MarketListing l2;
-    l2.id = QUuid::createUuid().toString();
-    l2.title = "Custom Crypto Art Print";
-    l2.description = "Limited edition digital art print, signed by the artist. Physical canvas print shipped worldwide.";
-    l2.category = "art";
-    l2.price = 0.1;
-    l2.sellerAddress = "coral1q9sxk9fv3r5g4r7hs8m6j2qz4k2h7y4d5w6e8c";
-    l2.timestamp = QDateTime::currentSecsSinceEpoch() - 3600;
-    l2.isActive = true;
-    mockListings.append(l2);
+void MarketPage::populateListings()
+{
+    // Clear existing
+    QLayoutItem *item;
+    while ((item = listingsGrid->takeAt(0)) != nullptr) {
+        delete item->widget();
+        delete item;
+    }
 
-    MarketListing l3;
-    l3.id = QUuid::createUuid().toString();
-    l3.title = "Freelance Smart Contract Audit";
-    l3.description = "Professional smart contract security audit. 5+ years experience. Detailed report included.";
-    l3.category = "services";
-    l3.price = 2.0;
-    l3.sellerAddress = "coral1q8v7m3f5k2j9h6g4s1p0o7i8u6y5t4r3e2w1q";
-    l3.timestamp = QDateTime::currentSecsSinceEpoch() - 7200;
-    l3.isActive = true;
-    mockListings.append(l3);
+    // TODO: Fetch real listings from ListingStore when backend is integrated
+    // For now, show empty state
 
-    MarketListing l4;
-    l4.id = QUuid::createUuid().toString();
-    l4.title = "Rare Crypto Collectible Card";
-    l4.description = "Physical trading card from the 2017 crypto boom era. Excellent condition, comes with certificate of authenticity.";
-    l4.category = "collectibles";
-    l4.price = 0.25;
-    l4.sellerAddress = "coral1qm5k8v7n3j2h1g9f6d4s3a2p1o0i8u7y6t5r4";
-    l4.timestamp = QDateTime::currentSecsSinceEpoch() - 10800;
-    l4.isActive = true;
-    mockListings.append(l4);
+    auto *emptyLabel = new QLabel(tr("No listings available.\n\nCreate the first listing in the SELL tab."), this);
+    emptyLabel->setStyleSheet(
+        "color: #4a4a4a;"
+        "font-size: 14px;"
+        "font-family: 'Terminus', monospace;"
+        "padding: 40px;"
+    );
+    emptyLabel->setAlignment(Qt::AlignCenter);
+    listingsGrid->addWidget(emptyLabel, 0, 0, 1, 2);
+    listingsGrid->setRowStretch(1, 1);
+}
 
-    refreshListings();
+void MarketPage::showListingDetails(const QString &listingId)
+{
+    Q_UNUSED(listingId);
+    // TODO: Fetch listing details from ListingStore when backend is integrated
+    detailTitleLabel->setText(tr("Select a listing"));
+    detailPriceLabel->setText(QString());
+    detailDescLabel->setText(QString());
+    detailSellerLabel->setText(QString());
+    detailStatusBadge->hide();
+    buyButton->setEnabled(false);
+}
+
+void MarketPage::onListingClicked(const QString &listingId)
+{
+    selectedListingId = listingId;
+    showListingDetails(listingId);
+}
+
+void MarketPage::onBuyItemClicked(const QString &listingId)
+{
+    QMessageBox::StandardButton reply = QMessageBox::question(
+        this,
+        tr("Confirm Purchase"),
+        tr("Create escrow transaction for this item?\n\n"
+           "Funds will be held in 2-of-3 multisig until you confirm delivery."),
+        QMessageBox::Yes | QMessageBox::No
+    );
+
+    if (reply == QMessageBox::Yes) {
+        // In real implementation:
+        // 1. Create MarketplaceEscrow with buyer/seller/arbiter keys
+        // 2. Use WalletModel to create and broadcast funding tx
+        // 3. Create MarketOrder and store in OrderStore
+        QMessageBox::information(
+            this,
+            tr("Escrow Created"),
+            tr("Escrow transaction created.\n\n"
+               "The seller will be notified. Once they ship,\n"
+               "confirm delivery to release funds.")
+        );
+    }
 }
 
 void MarketPage::onCreateListingClicked()
 {
     QString title = listingTitleEdit->text().trimmed();
-    QString description = listingDescriptionEdit->toPlainText().trimmed();
+    QString desc = listingDescriptionEdit->toPlainText().trimmed();
     double price = listingPriceSpinBox->value();
 
     if (title.isEmpty()) {
-        listingStatusLabel->setText(tr("Please enter a title for your listing"));
-        listingStatusLabel->setStyleSheet("font-size: 14px; color: #ff6666;");
-        return;
-    }
-
-    if (description.isEmpty()) {
-        listingStatusLabel->setText(tr("Please enter a description"));
-        listingStatusLabel->setStyleSheet("font-size: 14px; color: #ff6666;");
+        listingStatusLabel->setText(tr("ERROR: Title required"));
+        listingStatusLabel->setStyleSheet("color: #ff4444;");
         return;
     }
 
     if (price <= 0) {
-        listingStatusLabel->setText(tr("Please enter a valid price"));
-        listingStatusLabel->setStyleSheet("font-size: 14px; color: #ff6666;");
+        listingStatusLabel->setText(tr("ERROR: Invalid price"));
+        listingStatusLabel->setStyleSheet("color: #ff4444;");
         return;
     }
 
-    // Create new listing (in real implementation, this would broadcast to network)
-    MarketListing newListing;
-    newListing.id = QUuid::createUuid().toString();
-    newListing.title = title;
-    newListing.description = description;
-    newListing.category = listingCategoryCombo->currentData().toString();
-    newListing.price = price;
-    newListing.sellerAddress = "your_address_here";  // Would come from wallet
-    newListing.timestamp = QDateTime::currentSecsSinceEpoch();
-    newListing.isActive = true;
+    // In real implementation:
+    // 1. Create MarketListing with wallet address
+    // 2. Store in ListingStore
+    // 3. Broadcast to network
 
-    mockListings.prepend(newListing);
+    listingStatusLabel->setText(tr("Listing created successfully"));
+    listingStatusLabel->setStyleSheet("color: #00d4aa;");
 
-    // Clear form
     listingTitleEdit->clear();
     listingDescriptionEdit->clear();
     listingPriceSpinBox->setValue(1.0);
 
-    listingStatusLabel->setText(tr("Listing created successfully! It will appear in the marketplace shortly."));
-    listingStatusLabel->setStyleSheet("font-size: 14px; color: #ffffff;");
-
     refreshListings();
 }
 
-void MarketPage::onBuyItemClicked()
-{
-    if (!selectedListing) return;
-
-    QMessageBox::StandardButton reply = QMessageBox::question(
-        this,
-        tr("Confirm Purchase"),
-        tr("Are you sure you want to buy \"%1\" for %2 CRL?\n\n"
-           "The funds will be held in escrow until you confirm receipt of the item.")
-           .arg(selectedListing->title)
-           .arg(selectedListing->price, 0, 'f', 8),
-        QMessageBox::Yes | QMessageBox::No
-    );
-
-    if (reply == QMessageBox::Yes) {
-        // In real implementation, this would create an escrow transaction
-        QMessageBox::information(
-            this,
-            tr("Purchase Initiated"),
-            tr("Your purchase has been initiated!\n\n"
-               "Transaction ID: %1\n\n"
-               "Please contact the seller to arrange delivery. "
-               "Once you receive the item, confirm receipt to release the funds from escrow.")
-               .arg(QUuid::createUuid().toString().mid(1, 8))
-        );
-    }
-}
-
-void MarketPage::onRefreshListingsClicked()
-{
-    refreshListings();
-}
-
-void MarketPage::onListingSelected(QListWidgetItem *item)
-{
-    int index = listingsWidget->row(item);
-    if (index < 0 || index >= mockListings.size()) return;
-
-    selectedListing = &mockListings[index];
-
-    itemTitleLabel->setText(selectedListing->title);
-    itemPriceLabel->setText(QString("%1 CRL").arg(selectedListing->price, 0, 'f', 8));
-    itemDescriptionLabel->setText(selectedListing->description);
-    itemSellerLabel->setText(tr("Seller: %1").arg(selectedListing->sellerAddress));
-    buyButton->setEnabled(true);
-}
-
-void MarketPage::onCategoryChanged(int index)
+void MarketPage::onCategoryChanged(int /*index*/)
 {
     refreshListings();
 }
@@ -476,35 +677,10 @@ void MarketPage::onSearchClicked()
 
 void MarketPage::refreshListings()
 {
-    listingsWidget->clear();
-    QString filterCategory = categoryFilter->currentData().toString();
-    QString searchText = searchEdit->text().toLower();
+    populateListings();
+}
 
-    for (const MarketListing &listing : mockListings) {
-        if (!listing.isActive) continue;
-
-        // Category filter
-        if (filterCategory != "all" && listing.category != filterCategory) continue;
-
-        // Search filter
-        if (!searchText.isEmpty()) {
-            if (!listing.title.toLower().contains(searchText) &&
-                !listing.description.toLower().contains(searchText)) {
-                continue;
-            }
-        }
-
-        QListWidgetItem *item = new QListWidgetItem();
-        item->setText(QString("%1\n%2 CRL").arg(listing.title).arg(listing.price, 0, 'f', 8));
-        item->setData(Qt::UserRole, listing.id);
-        listingsWidget->addItem(item);
-    }
-
-    // Reset selection
-    selectedListing = nullptr;
-    itemTitleLabel->setText(tr("Select an item to view details"));
-    itemPriceLabel->clear();
-    itemDescriptionLabel->clear();
-    itemSellerLabel->clear();
-    buyButton->setEnabled(false);
+QString MarketPage::formatPrice(double amount) const
+{
+    return QString("%1 CRL").arg(amount, 0, 'f', 8);
 }

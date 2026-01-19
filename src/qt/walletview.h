@@ -10,13 +10,14 @@
 
 #include <QStackedWidget>
 
+class ChatPage;
 class ClientModel;
 class MarketPage;
 class MiningPage;
 class NetworkPage;
 class OverviewPage;
 class PlatformStyle;
-// class PokerPage;
+class PokerPage;
 class ReceiveCoinsDialog;
 class SendCoinsDialog;
 class SendCoinsRecipient;
@@ -66,7 +67,8 @@ private:
     MarketPage *marketPage;
     MiningPage *miningPage;
     NetworkPage *networkPage;
-    // PokerPage *pokerPage;
+    PokerPage *pokerPage;
+    ChatPage *chatPage;
     QWidget *transactionsPage;
     ReceiveCoinsDialog *receiveCoinsPage;
     SendCoinsDialog *sendCoinsPage;
@@ -87,8 +89,10 @@ public Q_SLOTS:
     void gotoMiningPage();
     /** Switch to network page */
     void gotoNetworkPage();
-    // /** Switch to poker page */
-    // void gotoPokerPage();
+    /** Switch to poker page */
+    void gotoPokerPage();
+    /** Switch to chat page */
+    void gotoChatPage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch to receive coins page */

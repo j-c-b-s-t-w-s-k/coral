@@ -45,6 +45,7 @@ QT_MOC_CPP = \
   qt/moc_bitcoinamountfield.cpp \
   qt/moc_bitcoingui.cpp \
   qt/moc_bitcoinunits.cpp \
+  qt/moc_chatpage.cpp \
   qt/moc_clientmodel.cpp \
   qt/moc_coincontroldialog.cpp \
   qt/moc_coincontroltreewidget.cpp \
@@ -53,6 +54,7 @@ QT_MOC_CPP = \
   qt/moc_guiutil.cpp \
   qt/moc_initexecutor.cpp \
   qt/moc_intro.cpp \
+  qt/moc_identitydialog.cpp \
   qt/moc_macdockiconhandler.cpp \
   qt/moc_macnotificationhandler.cpp \
   qt/moc_modaloverlay.cpp \
@@ -67,6 +69,9 @@ QT_MOC_CPP = \
   qt/moc_peertablemodel.cpp \
   qt/moc_peertablesortproxy.cpp \
   qt/moc_paymentserver.cpp \
+  qt/moc_pokerpage.cpp \
+  qt/moc_pokerlobby.cpp \
+  qt/moc_pokertable.cpp \
   qt/moc_psbtoperationsdialog.cpp \
   qt/moc_qrimagewidget.cpp \
   qt/moc_qvalidatedlineedit.cpp \
@@ -91,7 +96,11 @@ QT_MOC_CPP = \
   qt/moc_walletcontroller.cpp \
   qt/moc_walletframe.cpp \
   qt/moc_walletmodel.cpp \
-  qt/moc_walletview.cpp
+  qt/moc_walletview.cpp \
+  qt/widgets/moc_addresswidget.cpp \
+  qt/widgets/moc_chatbubble.cpp \
+  qt/widgets/moc_listingcard.cpp \
+  qt/widgets/moc_statusbadge.cpp
 
 BITCOIN_MM = \
   qt/macdockiconhandler.mm \
@@ -119,12 +128,14 @@ BITCOIN_QT_H = \
   qt/bitcoinamountfield.h \
   qt/bitcoingui.h \
   qt/bitcoinunits.h \
+  qt/chatpage.h \
   qt/clientmodel.h \
   qt/coincontroldialog.h \
   qt/coincontroltreewidget.h \
   qt/createwalletdialog.h \
   qt/csvmodelwriter.h \
   qt/editaddressdialog.h \
+  qt/identitydialog.h \
   qt/guiconstants.h \
   qt/guiutil.h \
   qt/initexecutor.h \
@@ -146,6 +157,9 @@ BITCOIN_QT_H = \
   qt/peertablemodel.h \
   qt/peertablesortproxy.h \
   qt/platformstyle.h \
+  qt/pokerpage.h \
+  qt/pokerlobby.h \
+  qt/pokertable.h \
   qt/psbtoperationsdialog.h \
   qt/qrimagewidget.h \
   qt/qvalidatedlineedit.h \
@@ -174,7 +188,11 @@ BITCOIN_QT_H = \
   qt/walletmodel.h \
   qt/walletmodeltransaction.h \
   qt/walletview.h \
-  qt/winshutdownmonitor.h
+  qt/winshutdownmonitor.h \
+  qt/widgets/addresswidget.h \
+  qt/widgets/chatbubble.h \
+  qt/widgets/listingcard.h \
+  qt/widgets/statusbadge.h
 
 QT_RES_FONTS = \
   qt/res/fonts/RobotoMono-Bold.ttf
@@ -260,13 +278,18 @@ BITCOIN_QT_WALLET_CPP = \
   qt/addressbookpage.cpp \
   qt/addresstablemodel.cpp \
   qt/askpassphrasedialog.cpp \
+  qt/chatpage.cpp \
   qt/coincontroldialog.cpp \
   qt/coincontroltreewidget.cpp \
   qt/createwalletdialog.cpp \
   qt/editaddressdialog.cpp \
+  qt/identitydialog.cpp \
   qt/openuridialog.cpp \
   qt/overviewpage.cpp \
   qt/paymentserver.cpp \
+  qt/pokerpage.cpp \
+  qt/pokerlobby.cpp \
+  qt/pokertable.cpp \
   qt/psbtoperationsdialog.cpp \
   qt/qrimagewidget.cpp \
   qt/receivecoinsdialog.cpp \
@@ -290,7 +313,11 @@ BITCOIN_QT_WALLET_CPP = \
   qt/walletframe.cpp \
   qt/walletmodel.cpp \
   qt/walletmodeltransaction.cpp \
-  qt/walletview.cpp
+  qt/walletview.cpp \
+  qt/widgets/addresswidget.cpp \
+  qt/widgets/chatbubble.cpp \
+  qt/widgets/listingcard.cpp \
+  qt/widgets/statusbadge.cpp
 
 BITCOIN_QT_CPP = $(BITCOIN_QT_BASE_CPP)
 if TARGET_WINDOWS

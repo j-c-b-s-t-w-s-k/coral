@@ -75,8 +75,10 @@ public Q_SLOTS:
     void gotoMarketPage();
     /** Switch to mining page */
     void gotoMiningPage();
-    // /** Switch to poker page */
-    // void gotoPokerPage();
+    /** Switch to poker page */
+    void gotoPokerPage();
+    /** Switch to chat page */
+    void gotoChatPage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch to receive coins page */

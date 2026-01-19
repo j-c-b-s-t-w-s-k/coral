@@ -6,12 +6,13 @@
 
 #include <qt/addressbookpage.h>
 #include <qt/askpassphrasedialog.h>
+#include <qt/chatpage.h>
 #include <qt/clientmodel.h>
 #include <qt/guiutil.h>
 #include <qt/marketpage.h>
 #include <qt/miningpage.h>
 #include <qt/networkpage.h>
-// #include <qt/pokerpage.h>
+#include <qt/pokerpage.h>
 #include <qt/optionsmodel.h>
 #include <qt/overviewpage.h>
 #include <qt/platformstyle.h>
@@ -54,8 +55,11 @@ WalletView::WalletView(WalletModel* wallet_model, const PlatformStyle* _platform
     // Network page for peer discovery and mempool
     networkPage = new NetworkPage(platformStyle);
 
-    // Poker page for decentralized poker games (disabled)
-    // pokerPage = new PokerPage(platformStyle);
+    // Poker page for decentralized poker games
+    pokerPage = new PokerPage(platformStyle);
+
+    // Chat page for network-wide communication
+    chatPage = new ChatPage(platformStyle);
 
     transactionsPage = new QWidget(this);
     QVBoxLayout *vbox = new QVBoxLayout();
@@ -90,7 +94,8 @@ WalletView::WalletView(WalletModel* wallet_model, const PlatformStyle* _platform
     addWidget(marketPage);
     addWidget(miningPage);
     addWidget(networkPage);
-    // addWidget(pokerPage);
+    addWidget(pokerPage);
+    addWidget(chatPage);
     addWidget(transactionsPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
@@ -143,8 +148,10 @@ void WalletView::setClientModel(ClientModel *_clientModel)
     miningPage->setClientModel(_clientModel);
     miningPage->setWalletModel(walletModel);
     networkPage->setClientModel(_clientModel);
-    // pokerPage->setClientModel(_clientModel);
-    // pokerPage->setWalletModel(walletModel);
+    pokerPage->setClientModel(_clientModel);
+    pokerPage->setWalletModel(walletModel);
+    chatPage->setClientModel(_clientModel);
+    chatPage->setWalletModel(walletModel);
     sendCoinsPage->setClientModel(_clientModel);
     walletModel->setClientModel(_clientModel);
 }
@@ -190,10 +197,15 @@ void WalletView::gotoNetworkPage()
     setCurrentWidget(networkPage);
 }
 
-// void WalletView::gotoPokerPage()
-// {
-//     setCurrentWidget(pokerPage);
-// }
+void WalletView::gotoPokerPage()
+{
+    setCurrentWidget(pokerPage);
+}
+
+void WalletView::gotoChatPage()
+{
+    setCurrentWidget(chatPage);
+}
 
 void WalletView::gotoHistoryPage()
 {

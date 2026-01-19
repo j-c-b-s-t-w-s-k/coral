@@ -31,10 +31,10 @@ QList<CoralUnit> CoralUnits::availableUnits()
 QString CoralUnits::longName(Unit unit)
 {
     switch (unit) {
-    case Unit::BTC: return QString("BTC");
-    case Unit::mBTC: return QString("mBTC");
-    case Unit::uBTC: return QString::fromUtf8("µBTC (bits)");
-    case Unit::SAT: return QString("Satoshi (sat)");
+    case Unit::BTC: return QString("CRL");
+    case Unit::mBTC: return QString("mCRL");
+    case Unit::uBTC: return QString::fromUtf8("µCRL (polyps)");
+    case Unit::SAT: return QString("Grain (grain)");
     } // no default case, so the compiler can warn about missing cases
     assert(false);
 }
@@ -44,8 +44,8 @@ QString CoralUnits::shortName(Unit unit)
     switch (unit) {
     case Unit::BTC: return longName(unit);
     case Unit::mBTC: return longName(unit);
-    case Unit::uBTC: return QString("bits");
-    case Unit::SAT: return QString("sat");
+    case Unit::uBTC: return QString("polyps");
+    case Unit::SAT: return QString("grain");
     } // no default case, so the compiler can warn about missing cases
     assert(false);
 }
@@ -53,10 +53,10 @@ QString CoralUnits::shortName(Unit unit)
 QString CoralUnits::description(Unit unit)
 {
     switch (unit) {
-    case Unit::BTC: return QString("Corals");
+    case Unit::BTC: return QString("Corals (CRL)");
     case Unit::mBTC: return QString("Milli-Corals (1 / 1" THIN_SP_UTF8 "000)");
-    case Unit::uBTC: return QString("Micro-Corals (bits) (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
-    case Unit::SAT: return QString("Satoshi (sat) (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case Unit::uBTC: return QString("Micro-Corals (polyps) (1 / 1" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
+    case Unit::SAT: return QString("Grains (1 / 100" THIN_SP_UTF8 "000" THIN_SP_UTF8 "000)");
     } // no default case, so the compiler can warn about missing cases
     assert(false);
 }
