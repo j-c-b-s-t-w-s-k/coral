@@ -64,6 +64,8 @@
 #include <sync.h>
 #include <timedata.h>
 #include <torcontrol.h>
+#include <landiscovery.h>
+#include <httpseeds.h>
 #include <txdb.h>
 #include <txmempool.h>
 #include <txorphanage.h>
@@ -233,6 +235,9 @@ void Shutdown(NodeContext& node)
     }
     StopMapPort();
 
+    // Stop LAN discovery
+    if (node.lan_discovery) node.lan_discovery->Stop();
+
     // Because these depend on each-other, we make sure that neither can be
     // using the other before destroying them.
     if (node.peerman) UnregisterValidationInterface(node.peerman.get());
@@ -253,6 +258,7 @@ void Shutdown(NodeContext& node)
     node.banman.reset();
     node.addrman.reset();
     node.netgroupman.reset();
+    node.lan_discovery.reset();
 
     if (node.mempool && node.mempool->GetLoadTried() && ShouldPersistMempool(*node.args)) {
         DumpMempool(*node.mempool, MempoolPath(*node.args));
@@ -467,6 +473,8 @@ void SetupServerArgs(ArgsManager& argsman)
     argsman.AddArg("-externalip=<ip>", "Specify your own public address", ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     argsman.AddArg("-fixedseeds", strprintf("Allow fixed seeds if DNS seeds don't provide peers (default: %u)", DEFAULT_FIXEDSEEDS), ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     argsman.AddArg("-forcednsseed", strprintf("Always query for peer addresses via DNS lookup (default: %u)", DEFAULT_FORCEDNSSEED), ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
+    argsman.AddArg("-httpseeds", "Fetch seed nodes from HTTP source (default: 1)", ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
+    argsman.AddArg("-landiscovery", "Enable automatic LAN peer discovery via UDP broadcast (default: 1)", ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     argsman.AddArg("-listen", "Accept connections from outside (default: 1 if no -proxy or -connect)", ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     argsman.AddArg("-listenonion", strprintf("Automatically create Tor onion service (default: %d)", DEFAULT_LISTEN_ONION), ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     argsman.AddArg("-maxconnections=<n>", strprintf("Maintain at most <n> connections to peers (default: %u). This limit does not apply to connections manually added via -addnode or the addnode RPC, which have a separate limit of %u.", DEFAULT_MAX_PEER_CONNECTIONS, MAX_ADDNODE_CONNECTIONS), ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
@@ -1778,6 +1786,36 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
 
     if (!node.connman->Start(*node.scheduler, connOptions)) {
         return false;
+    }
+
+    // Start LAN discovery for automatic peer finding on local network
+    if (args.GetBoolArg("-landiscovery", true)) {
+        node.lan_discovery = std::make_unique<LANDiscovery>();
+        uint16_t p2p_port = static_cast<uint16_t>(args.GetIntArg("-port", Params().GetDefaultPort()));
+
+        // Callback when LAN peer is discovered
+        auto lan_callback = [&node](const CService& addr) {
+            if (node.connman) {
+                // Add discovered peer as an outbound full relay connection
+                node.connman->AddConnection(addr.ToStringIPPort(), ConnectionType::OUTBOUND_FULL_RELAY);
+                LogPrintf("LANDiscovery: Attempting connection to %s\n", addr.ToStringIPPort());
+            }
+        };
+
+        if (node.lan_discovery->Start(p2p_port, lan_callback)) {
+            LogPrintf("LAN peer discovery enabled on port %d\n", LANDiscovery::DISCOVERY_PORT);
+        }
+    }
+
+    // Fetch seeds from HTTP source (e.g., GitHub raw file)
+    if (args.GetBoolArg("-httpseeds", true) && !args.IsArgSet("-connect")) {
+        std::vector<std::string> http_seeds = FetchHTTPSeeds(chainparams.NetworkIDString() == CBaseChainParams::TESTNET);
+        for (const auto& seed : http_seeds) {
+            if (node.connman) {
+                node.connman->AddConnection(seed, ConnectionType::OUTBOUND_FULL_RELAY);
+                LogPrintf("HTTPSeeds: Added seed %s\n", seed);
+            }
+        }
     }
 
     // ********************************************************* Step 13: finished

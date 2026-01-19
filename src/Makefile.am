@@ -258,6 +258,8 @@ CORAL_CORE_H = \
   threadsafety.h \
   timedata.h \
   torcontrol.h \
+  landiscovery.h \
+  httpseeds.h \
   txdb.h \
   txmempool.h \
   txorphanage.h \
@@ -429,6 +431,8 @@ libcoral_node_a_SOURCES = \
   signet.cpp \
   timedata.cpp \
   torcontrol.cpp \
+  landiscovery.cpp \
+  httpseeds.cpp \
   txdb.cpp \
   txmempool.cpp \
   txorphanage.cpp \

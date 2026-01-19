@@ -135,12 +135,10 @@ public:
         // This is fine at runtime as we'll fall back to using them as an addrfetch if they don't support the
         // service bits we want, but we should get them updated to support all service bits wanted by any
         // release ASAP to avoid it where possible.
-        // Coral DNS seeds - to be replaced with actual Coral network seeds
-        // vSeeds.emplace_back("seed1.coralcoin.org.");
-        // vSeeds.emplace_back("seed2.coralcoin.org.");
-        // vSeeds.emplace_back("dnsseed.coralcoin.org.");
-        // For now, clear seeds until Coral network is established
-        vSeeds.clear();
+        // Coral DNS seeds
+        vSeeds.emplace_back("seed.coral.directory.");
+        vSeeds.emplace_back("seed1.coral.directory.");
+        vSeeds.emplace_back("seed2.coral.directory.");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0);  // '1' prefix for Coral addresses
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);  // '3' prefix for Coral script addresses (Bitcoin standard)
@@ -246,13 +244,9 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("0x31f6694421dd96f7c3fc212a6652cb8c5e0f774a925255c99e0b787ba7dac071"));
 
         vFixedSeeds.clear();
-        vSeeds.clear();
-        // nodes with support for servicebits filtering should be at the top
-        // Coral testnet DNS seeds - to be replaced with actual Coral testnet seeds
-        // vSeeds.emplace_back("testnet-seed1.coralcoin.org.");
-        // vSeeds.emplace_back("testnet-seed2.coralcoin.org.");
-        // For now, clear seeds until Coral testnet is established
-        vSeeds.clear();
+        // Coral testnet DNS seeds
+        vSeeds.emplace_back("testnet-seed.coral.directory.");
+        vSeeds.emplace_back("testnet-seed1.coral.directory.");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
