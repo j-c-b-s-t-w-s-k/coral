@@ -150,7 +150,8 @@ public:
 
         bech32_hrp = "bc"; // Use Bitcoin's bech32 prefix for compatibility
 
-        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
+        // No fixed seeds yet - use -addnode=<ip>:8334 to connect to peers
+        vFixedSeeds.clear();
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
@@ -261,7 +262,8 @@ public:
 
         bech32_hrp = "tcoral"; // Coral testnet bech32
 
-        vFixedSeeds = std::vector<uint8_t>(std::begin(chainparams_seed_test), std::end(chainparams_seed_test));
+        // No fixed seeds yet - use -addnode=<ip>:18334 to connect to peers
+        vFixedSeeds.clear();
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;
